@@ -16,8 +16,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, validator
 import uvicorn
 
-# Import the NSFK analyzer
-from nsfk_analyzer import NSFKAnalyzer
+# Import the NSFK analyzer (quality optimized version)
+from nsfk_analyzer_quality_optimized import QualityPreservingNSFKAnalyzer
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,7 +33,7 @@ async def lifespan(_app: FastAPI):
     
     # Startup
     logger.info("Starting NSFK API server...")
-    analyzer = NSFKAnalyzer()
+    analyzer = QualityPreservingNSFKAnalyzer()
     
     yield
     
@@ -102,6 +102,9 @@ class AnalyzeResponse(BaseModel):
     keywords: list
     recommendation: str
     audio_transcript: Optional[str] = None
+    comment_analysis: Optional[str] = None
+    channel_name: Optional[str] = None
+    web_reputation: Optional[str] = None
     analysis_timestamp: str
     report_path: Optional[str] = None
 
@@ -177,7 +180,7 @@ async def analyze_video(request: AnalyzeRequest):
     
     try:
         # Perform analysis
-        result = await analyzer.analyze_youtube_video(request.url)
+        result = await analyzer.analyze_youtube_video_quality_optimized(request.url)
         
         # Check if analysis failed
         if 'error' in result:

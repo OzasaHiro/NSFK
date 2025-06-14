@@ -247,6 +247,38 @@
             background: #218838;
         }
         
+        /* Additional Analysis Styles */
+        .additional-analysis {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .analysis-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            border-left: 4px solid #17a2b8;
+            background: #f8f9fa;
+        }
+        
+        .analysis-section h4 {
+            color: #17a2b8;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .analysis-section p {
+            margin: 0;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .channel-info {
+            font-weight: bold;
+            color: #495057;
+        }
+        
         .help-section {
             background: #f8f9fa;
             border-radius: 10px;
@@ -643,12 +675,12 @@ echo "Safety Score: " . $response['safety_score'];
             categories.innerHTML = '';
             const categoryData = data.category_scores || {};
             const categoryMaxScores = {
-                'Violence': 20,
-                'Language': 15,
-                'Scary Content': 20,
-                'Sexual Content': 15,
-                'Substance Use': 10,
-                'Dangerous Behavior': 10,
+                'Non-Violence': 20,
+                'Appropriate Language': 15,
+                'Non-Scary Content': 20,
+                'Family-Friendly Content': 15,
+                'Substance-Free': 10,
+                'Safe Behavior': 10,
                 'Educational Value': 10
             };
             
@@ -674,6 +706,9 @@ echo "Safety Score: " . $response['safety_score'];
                 keywordSpan.textContent = keyword;
                 keywords.appendChild(keywordSpan);
             });
+            
+            // Add Comment Analysis and Web Reputation sections
+            addAdditionalAnalysis(data);
             
             results.style.display = 'block';
         }
@@ -705,6 +740,75 @@ echo "Safety Score: " . $response['safety_score'];
             
             // Add active class to clicked tab
             event.target.classList.add('active');
+        }
+        
+        function addAdditionalAnalysis(data) {
+            // Remove existing additional analysis if any
+            const existingAnalysis = document.getElementById('additionalAnalysis');
+            if (existingAnalysis) {
+                existingAnalysis.remove();
+            }
+            
+            // Create additional analysis section
+            const additionalDiv = document.createElement('div');
+            additionalDiv.id = 'additionalAnalysis';
+            additionalDiv.className = 'additional-analysis';
+            
+            let analysisHTML = '<h3>Additional Analysis</h3>';
+            
+            // Channel Information
+            if (data.channel_name && data.channel_name !== 'Unknown') {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <h4>📺 Channel Information</h4>
+                        <p class="channel-info">${data.channel_name}</p>
+                    </div>
+                `;
+            }
+            
+            // Web Reputation Analysis
+            if (data.web_reputation) {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <h4>🌐 Web Reputation Analysis</h4>
+                        <p>${data.web_reputation}</p>
+                    </div>
+                `;
+            }
+            
+            // Comment Analysis
+            if (data.comment_analysis) {
+                const isError = data.comment_analysis.includes('disabled') || 
+                               data.comment_analysis.includes('not configured') ||
+                               data.comment_analysis.includes('Error') ||
+                               data.comment_analysis.includes('quota exceeded');
+                
+                const commentClass = isError ? 'color: #856404; font-style: italic;' : '';
+                
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <h4>💬 Comment Analysis</h4>
+                        <p style="${commentClass}">${data.comment_analysis}</p>
+                    </div>
+                `;
+            }
+            
+            // Show message if no additional analysis available
+            if (!data.channel_name && !data.web_reputation && !data.comment_analysis) {
+                analysisHTML += `
+                    <div class="analysis-section">
+                        <p style="color: #6c757d; font-style: italic;">
+                            Additional analysis not available - YouTube API key may not be configured.
+                        </p>
+                    </div>
+                `;
+            }
+            
+            additionalDiv.innerHTML = analysisHTML;
+            
+            // Insert after the keywords section
+            const keywordsDiv = document.querySelector('.summary');
+            keywordsDiv.parentNode.insertBefore(additionalDiv, keywordsDiv.nextSibling);
         }
         
         // Allow Enter key to submit

@@ -29,3 +29,9 @@ platformdirs>=4.0.0
 # FastAPI for web API
 fastapi>=0.104.0
 uvicorn>=0.24.0
+
+# YouTube API and comment analysis
+google-api-python-client>=2.140.0
+
+# OpenAI API for comment and reputation analysis
+openai>=1.54.0

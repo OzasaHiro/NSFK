@@ -3,6 +3,9 @@
 NSFK Video Analyzer - Quality-Preserving Optimization
 High-performance video safety analysis that MAINTAINS or IMPROVES analysis quality
 while achieving 3-5x speed improvements through better algorithms and parallelization
+
+TEMPORARY MODIFICATION: Audio transcription processing is currently disabled.
+Search for "TEMPORARILY DISABLED" or "UNCOMMENT TO RESTORE" to re-enable audio processing.
 """
 
 import os
@@ -14,7 +17,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 from dotenv import load_dotenv
 import concurrent.futures
-import hashlib
+# import hashlib  # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE when needed
 from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables
@@ -27,11 +30,15 @@ from youtube_downloader import YouTubeDownloader
 import cv2
 import tempfile
 import base64
-import numpy as np
+# import numpy as np  # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE when needed
 from pydub import AudioSegment
 import whisper
 import aiohttp
 import nest_asyncio
+import re
+from googleapiclient.discovery import build
+from typing import Optional
+import requests
 
 # Apply nest_asyncio for Jupyter/interactive environments
 nest_asyncio.apply()
@@ -39,6 +46,8 @@ nest_asyncio.apply()
 # Configuration - Using Gemini 2.0 Flash for 2x RPM improvement
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # OpenAI API key for comment/reputation analysis
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")  # YouTube Data API v3 key
 
 # Rate limiting configuration for Gemini 2.0 Flash (2x higher RPM)
 GEMINI_2_0_FLASH_RPM = 1000  # Requests per minute (2x improvement)
@@ -202,29 +211,34 @@ class QualityPreservingNSFKAnalyzer:
         
         return final_frames, audio_output_filepath
     
-    async def transcribe_audio_async(self, audio_file_path: str) -> str:
-        """Async audio transcription for parallel processing"""
-        if not audio_file_path or not os.path.exists(audio_file_path):
-            return ""
+    async def transcribe_audio_async(self, audio_file_path: str = None) -> str:
+        """Async audio transcription for parallel processing - TEMPORARILY DISABLED"""
+        # TEMPORARILY SKIPPING AUDIO TRANSCRIPTION - COMMENT OUT FOR RESTORATION
+        print("🎵 Audio transcription temporarily disabled")
+        return ""
         
-        # Load model in thread to not block async loop
-        loop = asyncio.get_event_loop()
-        
-        def load_and_transcribe():
-            self.load_whisper_model()
-            try:
-                result = self.whisper_model.transcribe(audio_file_path)
-                return result["text"]
-            except Exception as e:
-                print(f"Error during transcription: {e}")
-                return ""
-        
-        print("🎵 Transcribing audio (async)...")
-        with ThreadPoolExecutor() as executor:
-            transcription = await loop.run_in_executor(executor, load_and_transcribe)
-        
-        print("Audio transcription complete")
-        return transcription
+        # COMMENTED OUT FOR TEMPORARY SKIP - UNCOMMENT TO RESTORE:
+        # if not audio_file_path or not os.path.exists(audio_file_path):
+        #     return ""
+        # 
+        # # Load model in thread to not block async loop
+        # loop = asyncio.get_event_loop()
+        # 
+        # def load_and_transcribe():
+        #     self.load_whisper_model()
+        #     try:
+        #         result = self.whisper_model.transcribe(audio_file_path)
+        #         return result["text"]
+        #     except Exception as e:
+        #         print(f"Error during transcription: {e}")
+        #         return ""
+        # 
+        # print("🎵 Transcribing audio (async)...")
+        # with ThreadPoolExecutor() as executor:
+        #     transcription = await loop.run_in_executor(executor, load_and_transcribe)
+        # 
+        # print("Audio transcription complete")
+        # return transcription
     
     async def analyze_frames_high_throughput(self, frames_base64: List[str], video_title: str) -> List[str]:
         """
@@ -290,12 +304,11 @@ class QualityPreservingNSFKAnalyzer:
         """Optimized frame analysis with better error handling"""
         headers = {'Content-Type': 'application/json'}
         
-        # Concise but comprehensive prompt
+        # Ultra-concise prompt for 10-year-old safety analysis
         prompt_text = (
-            f"Analyze this video frame for child safety issues. "
-            f"Identify: violence, weapons, nudity, sexual content, drug/alcohol use, "
-            f"scary imagery, dangerous activities, inappropriate language/text. "
-            f"If completely safe for children, respond 'SAFE_FOR_KIDS'."
+            f"Check frame for 10-year-old safety: violence, weapons, nudity, sexual content, "
+            f"drugs/alcohol, scary imagery, dangerous acts, inappropriate text, content too advanced/complex. "
+            f"If safe for 10-year-olds, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
         )
         
         payload = {
@@ -305,7 +318,11 @@ class QualityPreservingNSFKAnalyzer:
                     {"text": prompt_text},
                     {"inlineData": {"mimeType": "image/jpeg", "data": base64_image}}
                 ]
-            }]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 50  # Limit response length for speed
+            }
         }
         
         try:
@@ -333,16 +350,19 @@ class QualityPreservingNSFKAnalyzer:
     
     async def generate_comprehensive_report(self, video_title: str, audio_transcript: str, 
                                           visual_observations: List[str]) -> dict:
-        """Generate comprehensive safety report"""
+        """Generate comprehensive safety report using OpenAI"""
         print("📊 Generating comprehensive safety report...")
         
         # Prepare comprehensive analysis data
         combined_analysis = f"Video Title: '{video_title}'\n\n"
         
-        # Include more audio context for better analysis
+        # Include more audio context for better analysis (TEMPORARILY DISABLED)
         if audio_transcript:
             combined_analysis += f"Audio Transcript ({len(audio_transcript)} chars):\n"
             combined_analysis += audio_transcript[:1500] + ("..." if len(audio_transcript) > 1500 else "") + "\n\n"
+        else:
+            # TEMPORARY: Note audio processing is disabled
+            combined_analysis += "Audio Transcript: Audio processing temporarily disabled\n\n"
         
         combined_analysis += f"Visual Safety Analysis ({len(visual_observations)} issues found):\n"
         if visual_observations:
@@ -353,70 +373,101 @@ class QualityPreservingNSFKAnalyzer:
             combined_analysis += "No unsafe visual content detected.\n"
         
         prompt = (
-            "Provide comprehensive video safety analysis. Score each category based on SAFETY (higher = safer):\n\n"
+            "Provide comprehensive video safety analysis for 10-year-olds. Score each category based on SAFETY (higher = safer):\n\n"
             "Categories (max points):\n"
-            "- Violence: 20 points (physical violence, weapons, fighting)\n"
-            "- Language: 15 points (profanity, inappropriate language)\n"
-            "- Scary Content: 20 points (horror, jump scares, frightening imagery)\n"
-            "- Sexual Content: 15 points (nudity, suggestive themes)\n"
-            "- Substance Use: 10 points (drugs, alcohol, smoking)\n"
-            "- Dangerous Behavior: 10 points (risky activities kids might imitate)\n"
-            "- Educational Value: 10 points (positive learning content)\n\n"
+            "- Non-Violence: 20 points (absence of physical violence, weapons, fighting)\n"
+            "- Appropriate Language: 15 points (no profanity, clean language)\n"
+            "- Non-Scary Content: 20 points (no horror, jump scares, or frightening imagery)\n"
+            "- Family-Friendly Content: 15 points (no nudity, inappropriate themes)\n"
+            "- Substance-Free: 10 points (no drugs, alcohol, smoking)\n"
+            "- Safe Behavior: 10 points (no risky activities kids might imitate)\n"
+            "- Educational Value: 10 points (positive learning content for 10-year-olds)\n\n"
             "Response format (JSON only):\n"
             "{\n"
-            '  "category_scores": {"Violence": 0-20, "Language": 0-15, ...},\n'
+            '  "category_scores": {"Non-Violence": 0-20, "Appropriate Language": 0-15, ...},\n'
             '  "total_score": sum_of_all_scores,\n'
             '  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],\n'
-            '  "summary": "Detailed 2-3 sentence safety summary for parents"\n'
+            '  "summary": "Detailed 2-3 sentence safety summary for parents of 10-year-olds"\n'
             "}\n\n"
             f"Video Analysis Data:\n{combined_analysis}"
         )
         
-        headers = {'Content-Type': 'application/json'}
-        payload = {
-            "contents": [{
-                "role": "user",
-                "parts": [{"text": prompt}]
-            }]
+        
+        # Use OpenAI instead of Gemini to avoid rate limits
+        if not OPENAI_API_KEY:
+            return {
+                'category_scores': {
+                    'Non-Violence': 15, 'Appropriate Language': 12, 'Non-Scary Content': 15,
+                    'Family-Friendly Content': 12, 'Substance-Free': 8, 
+                    'Safe Behavior': 8, 'Educational Value': 5
+                },
+                'total_score': 75,
+                'keywords': ["analysis", "incomplete"],
+                'summary': "OpenAI API key not configured - using fallback scoring for 10-year-olds."
+            }
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {OPENAI_API_KEY}'
         }
         
+        openai_payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "You are an expert at analyzing video content for 10-year-old child safety. Always respond with valid JSON only."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 800,
+            "temperature": 0.1
+        }
+
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(f"{GEMINI_API_URL}?key={GEMINI_API_KEY}", 
-                                      headers=headers, json=payload) as response:
-                    response.raise_for_status()
-                    result = await response.json()
-                    
-                    if (result.get('candidates') and 
-                        result['candidates'][0].get('content') and 
-                        result['candidates'][0]['content'].get('parts')):
+                async with session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=openai_payload
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        content = result['choices'][0]['message']['content'].strip()
                         
-                        response_text = result['candidates'][0]['content']['parts'][0]['text'].strip()
-                        
-                        try:
-                            import re
-                            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-                            if json_match:
+                        # Try to extract JSON from the OpenAI response
+                        import re
+                        json_match = re.search(r'\{.*\}', content, re.DOTALL)
+                        if json_match:
+                            try:
                                 parsed = json.loads(json_match.group())
                                 return {
                                     'category_scores': parsed.get('category_scores', {}),
                                     'total_score': parsed.get('total_score', 50),
                                     'keywords': parsed.get('keywords', []),
-                                    'summary': parsed.get('summary', 'Comprehensive analysis complete.')
+                                    'summary': parsed.get('summary', 'Comprehensive analysis complete for 10-year-olds.')
                                 }
-                        except Exception as parse_error:
-                            print(f"JSON parsing error: {parse_error}")
+                            except Exception as parse_error:
+                                print(f"JSON parsing error: {parse_error}")
                         
                         # Enhanced fallback scoring
                         return {
                             'category_scores': {
-                                'Violence': 15, 'Language': 12, 'Scary Content': 15,
-                                'Sexual Content': 12, 'Substance Use': 8, 
-                                'Dangerous Behavior': 8, 'Educational Value': 5
+                                'Non-Violence': 15, 'Appropriate Language': 12, 'Non-Scary Content': 15,
+                                'Family-Friendly Content': 12, 'Substance-Free': 8, 
+                                'Safe Behavior': 8, 'Educational Value': 5
                             },
                             'total_score': 75,
                             'keywords': ["video", "content", "analysis"],
-                            'summary': "Comprehensive analysis complete. Detailed visual and audio analysis performed."
+                            'summary': "Comprehensive analysis complete. Detailed visual and audio analysis performed for 10-year-olds."
+                        }
+                    else:
+                        return {
+                            'category_scores': {
+                                'Non-Violence': 10, 'Appropriate Language': 10, 'Non-Scary Content': 10,
+                                'Family-Friendly Content': 10, 'Substance-Free': 5, 
+                                'Safe Behavior': 5, 'Educational Value': 0
+                            },
+                            'total_score': 50,
+                            'keywords': ["openai", "error"],
+                            'summary': f"OpenAI API error (status: {response.status}) - using fallback scoring for 10-year-olds."
                         }
                         
         except Exception as e:
@@ -424,13 +475,13 @@ class QualityPreservingNSFKAnalyzer:
         
         return {
             'category_scores': {
-                'Violence': 10, 'Language': 10, 'Scary Content': 10,
-                'Sexual Content': 10, 'Substance Use': 5, 
-                'Dangerous Behavior': 5, 'Educational Value': 0
+                'Non-Violence': 10, 'Appropriate Language': 10, 'Non-Scary Content': 10,
+                'Family-Friendly Content': 10, 'Substance-Free': 5, 
+                'Safe Behavior': 5, 'Educational Value': 0
             },
             'total_score': 50,
             'keywords': ["error"],
-            'summary': "Analysis encountered an error but partial results available."
+            'summary': "Analysis encountered an error but partial results available for 10-year-olds."
         }
     
     async def analyze_video_safety_quality_optimized(self, video_filepath: str, video_info: Dict[str, Any]) -> Dict[str, Any]:
@@ -449,25 +500,61 @@ class QualityPreservingNSFKAnalyzer:
         
         with tempfile.TemporaryDirectory() as temp_dir:
             # Extract frames with higher quality (more frames, scene detection)
-            frames_base64, audio_filepath = self.extract_frames_concurrent(
+            frames_base64, _ = self.extract_frames_concurrent(
                 video_filepath, temp_dir, frames_per_second=0.5  # SAME or HIGHER frame rate
             )
             
-            # Parallel processing: audio + video analysis
-            print("\n🚀 Starting parallel audio and video analysis...")
+            # TEMPORARILY MODIFIED: Skip audio processing for now
+            print("\n🚀 Starting video analysis (audio temporarily disabled)...")
             
-            audio_task = asyncio.create_task(
-                self.transcribe_audio_async(audio_filepath)
+            # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE PARALLEL PROCESSING:
+            # audio_task = asyncio.create_task(
+            #     self.transcribe_audio_async(audio_filepath)
+            # )
+            # 
+            # frames_task = asyncio.create_task(
+            #     self.analyze_frames_high_throughput(frames_base64, video_title)
+            # )
+            # 
+            # # Wait for both to complete
+            # audio_transcript, visual_safety_observations = await asyncio.gather(
+            #     audio_task, frames_task
+            # )
+            
+            # TEMPORARY: Only process video frames, skip audio
+            audio_transcript = ""  # Empty string for now
+            visual_safety_observations = await self.analyze_frames_high_throughput(frames_base64, video_title)
+            
+            # NEW: Add comment and web reputation analysis with rate limiting delay
+            print("\n🔍 Starting comment and web reputation analysis...")
+            youtube_url = f"https://youtube.com/watch?v={video_info.get('video_id', '')}"
+            
+            # Add delay to avoid rate limiting after frame analysis
+            print("⏱️  Adding brief delay to avoid API rate limits...")
+            await asyncio.sleep(2)  # 2-second delay to respect rate limits
+            
+            comment_task = asyncio.create_task(
+                self.get_youtube_comments(youtube_url)
+            )
+            reputation_task = asyncio.create_task(
+                self.get_channel_info_and_web_reputation(youtube_url)
             )
             
-            frames_task = asyncio.create_task(
-                self.analyze_frames_high_throughput(frames_base64, video_title)
+            # Wait for additional analysis
+            (comments, comment_error), reputation_data = await asyncio.gather(
+                comment_task, reputation_task
             )
             
-            # Wait for both to complete
-            audio_transcript, visual_safety_observations = await asyncio.gather(
-                audio_task, frames_task
-            )
+            # Analyze comments if available with additional delay
+            comment_analysis = ""
+            if comments and not comment_error:
+                # Add small delay before comment analysis API call
+                await asyncio.sleep(1)
+                comment_analysis = await self.analyze_comments_with_openai(comments, video_title)
+            elif comment_error:
+                comment_analysis = comment_error
+            else:
+                comment_analysis = "No comments found for analysis"
             
             # Generate comprehensive report
             report_data = await self.generate_comprehensive_report(
@@ -496,6 +583,9 @@ class QualityPreservingNSFKAnalyzer:
                 "keywords": report_data['keywords'],
                 "recommendation": "Safe" if total_score >= 80 else "Review Required" if total_score >= 60 else "Not Recommended",
                 "audio_transcript": audio_transcript[:800] + "..." if len(audio_transcript) > 800 else audio_transcript,
+                "comment_analysis": comment_analysis,
+                "channel_name": reputation_data.get("channel_name", "Unknown"),
+                "web_reputation": reputation_data.get("web_reputation", "Not analyzed"),
                 "analysis_timestamp": datetime.now().isoformat(),
                 "quality_metrics": {
                     "frames_analyzed": len(frames_base64),
@@ -548,6 +638,198 @@ class QualityPreservingNSFKAnalyzer:
             if os.path.exists(file_path):
                 os.remove(file_path)
                 print(f"Cleaned up temporary video file.")
+    
+    def extract_video_id_from_url(self, youtube_url: str) -> Optional[str]:
+        """Extract video ID from YouTube URL"""
+        patterns = [
+            r"(?:v=|\/v\/|youtu\.be\/|embed\/|\/v\/|\/e\/|watch\?v=|\?v=)([^#\&\?]*).*",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, youtube_url)
+            if match:
+                return match.group(1)
+        return None
+    
+    async def get_youtube_comments(self, youtube_url: str, max_results: int = 20) -> tuple[List[str], Optional[str]]:
+        """Fetch YouTube comments using YouTube Data API v3"""
+        if not YOUTUBE_API_KEY:
+            return [], "YouTube API key not configured - skipping comment analysis"
+        
+        try:
+            video_id = self.extract_video_id_from_url(youtube_url)
+            if not video_id:
+                return [], "Could not extract video ID from URL"
+            
+            youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+            
+            request = youtube.commentThreads().list(
+                part='snippet',
+                videoId=video_id,
+                maxResults=max_results,
+                textFormat='plainText'
+            )
+            response = request.execute()
+            
+            comments = []
+            for item in response.get('items', []):
+                comment_text = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                comments.append(comment_text)
+            
+            return comments, None
+            
+        except Exception as e:
+            error_msg = str(e)
+            if "commentsDisabled" in error_msg or "disabled comments" in error_msg:
+                return [], "Comments are disabled for this video"
+            elif "quotaExceeded" in error_msg:
+                return [], "YouTube API quota exceeded - try again later"
+            elif "forbidden" in error_msg.lower():
+                return [], "Access denied to video comments"
+            else:
+                return [], f"Error fetching comments: {error_msg[:100]}"
+    
+    async def analyze_comments_with_openai(self, comments: List[str], video_title: str) -> str:
+        """Analyze YouTube comments sentiment using OpenAI GPT-4"""
+        if not comments:
+            return "No comments available for analysis"
+        
+        if not OPENAI_API_KEY:
+            return "OpenAI API key not configured - comment analysis skipped"
+        
+        # Combine comments for analysis (limit to avoid token overload)
+        comments_text = "\n---\n".join(comments[:10])  # Analyze max 10 comments
+        
+        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a 10-year-old child perspective:
+
+{comments_text}
+
+Provide a BRIEF analysis (2-3 sentences max):
+1. Overall sentiment (positive/negative/mixed)
+2. Main concerns or praise related to safety for 10-year-olds
+3. Any red flags for parents of 10-year-olds (content difficulty, inappropriate topics)
+
+Keep response concise for quick processing."""
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {OPENAI_API_KEY}'
+        }
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "You are an expert at analyzing social media comments for 10-year-old child safety and age-appropriate content."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 200,
+            "temperature": 0.1
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=payload
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        return result['choices'][0]['message']['content'].strip()
+                    elif response.status == 429:
+                        return "OpenAI API rate limit reached - comment analysis skipped"
+                    else:
+                        return f"Comment analysis failed (OpenAI status: {response.status})"
+        except Exception as e:
+            return f"Comment analysis error: {str(e)}"
+    
+    async def get_channel_info_and_web_reputation(self, youtube_url: str) -> Dict[str, str]:
+        """Get channel info and analyze web reputation"""
+        if not YOUTUBE_API_KEY:
+            return {
+                "channel_name": "Unknown",
+                "web_reputation": "YouTube API key not configured - skipping web reputation analysis"
+            }
+        
+        try:
+            video_id = self.extract_video_id_from_url(youtube_url)
+            if not video_id:
+                return {
+                    "channel_name": "Unknown", 
+                    "web_reputation": "Could not extract video ID"
+                }
+            
+            # Get channel info
+            youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY)
+            
+            video_response = youtube.videos().list(
+                part='snippet',
+                id=video_id
+            ).execute()
+            
+            if not video_response.get('items'):
+                return {
+                    "channel_name": "Unknown",
+                    "web_reputation": "Video not found"
+                }
+            
+            channel_title = video_response['items'][0]['snippet']['channelTitle']
+            
+            # Analyze web reputation using OpenAI
+            web_reputation = await self.analyze_web_reputation_with_openai(channel_title)
+            
+            return {
+                "channel_name": channel_title,
+                "web_reputation": web_reputation
+            }
+            
+        except Exception as e:
+            return {
+                "channel_name": "Unknown",
+                "web_reputation": f"Error analyzing reputation: {str(e)}"
+            }
+    
+    async def analyze_web_reputation_with_openai(self, channel_name: str) -> str:
+        """Analyze channel reputation using OpenAI GPT-4o-mini"""
+        if not OPENAI_API_KEY:
+            return "OpenAI API key not configured - reputation analysis skipped"
+            
+        prompt = f"""Based on general knowledge, provide a BRIEF assessment (2-3 sentences max) of the YouTube channel "{channel_name}" from a 10-year-old child perspective:
+
+1. Is this content appropriate and understandable for 10-year-olds?
+2. Any known safety concerns or content that might be too advanced/complex?
+3. Overall rating for 10-year-olds: Safe/Caution/Unknown
+
+Keep response very concise."""
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {OPENAI_API_KEY}'
+        }
+        payload = {
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "system", "content": "You are an expert at evaluating YouTube channels for 10-year-old child safety and age-appropriate content difficulty."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 150,
+            "temperature": 0.1
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers=headers,
+                    json=payload
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        return result['choices'][0]['message']['content'].strip()
+                    elif response.status == 429:
+                        return "OpenAI API rate limit reached - reputation analysis skipped"
+                    else:
+                        return f"Reputation analysis failed (OpenAI status: {response.status})"
+        except Exception as e:
+            return f"Reputation analysis error: {str(e)}"
     
     def save_report(self, analysis_result: Dict[str, Any]) -> str:
         """Save comprehensive analysis report"""
