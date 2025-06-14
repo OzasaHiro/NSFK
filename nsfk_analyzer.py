@@ -272,25 +272,28 @@ class NSFKAnalyzer:
                         await asyncio.sleep(1)
                 
             # Generate final safety assessment
-            safety_score, keywords, summary = await self.generate_safety_report(
+            report_data = await self.generate_safety_report(
                 video_title, audio_transcript, visual_safety_observations
             )
+            
+            total_score = report_data['total_score']
             
             return {
                 "video_url": f"https://youtube.com/watch?v={video_info.get('video_id', '')}",
                 "title": video_title,
                 "duration": video_info.get('duration', 0),
-                "safety_score": safety_score,
-                "summary": summary,
+                "safety_score": total_score,
+                "category_scores": report_data['category_scores'],
+                "summary": report_data['summary'],
                 "risk_factors": visual_safety_observations[:5],  # Top 5 issues
-                "keywords": keywords,
-                "recommendation": "Safe" if safety_score >= 80 else "Review Required" if safety_score >= 60 else "Not Recommended",
+                "keywords": report_data['keywords'],
+                "recommendation": "Safe" if total_score >= 80 else "Review Required" if total_score >= 60 else "Not Recommended",
                 "audio_transcript": audio_transcript[:500] + "..." if len(audio_transcript) > 500 else audio_transcript,
                 "analysis_timestamp": datetime.now().isoformat()
             }
             
     async def generate_safety_report(self, video_title: str, audio_transcript: str, 
-                                   visual_observations: list) -> tuple:
+                                   visual_observations: list) -> dict:
         """Generate final safety report using Gemini"""
         print("\n--- Generating final safety assessment ---")
         
@@ -306,11 +309,21 @@ class NSFKAnalyzer:
             combined_analysis += "No unsafe visual content detected.\n"
             
         prompt = (
-            "Based on the following video analysis, provide:\n"
-            "1. A safety score from 0-100 (100 being completely safe for children)\n"
-            "2. 5 key content keywords\n"
-            "3. A 1-2 line summary for parents\n\n"
-            "Format your response as JSON with keys: safety_score, keywords (array), summary\n\n"
+            "Based on the following video analysis, provide a detailed safety assessment with category scores.\n"
+            "Each category should be scored based on how SAFE the content is (higher score = safer):\n\n"
+            "Categories with max points:\n"
+            "- Violence: 20 points max (physical violence, fighting, weapons)\n"
+            "- Language: 15 points max (profanity, inappropriate language)\n"
+            "- Scary Content: 20 points max (horror elements, jump scares, frightening imagery)\n"
+            "- Sexual Content: 15 points max (nudity, suggestive themes)\n"
+            "- Substance Use: 10 points max (drugs, alcohol, smoking)\n"
+            "- Dangerous Behavior: 10 points max (risky activities kids might imitate)\n"
+            "- Educational Value: 10 points max (positive learning content)\n\n"
+            "Provide your response as JSON with:\n"
+            "- category_scores: object with each category and its score\n"
+            "- total_score: sum of all category scores (out of 100)\n"
+            "- keywords: array of 5 key content keywords\n"
+            "- summary: 1-2 line summary for parents\n\n"
             f"Analysis:\n{combined_analysis}"
         )
         
@@ -341,20 +354,35 @@ class NSFKAnalyzer:
                             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
                             if json_match:
                                 parsed = json.loads(json_match.group())
-                                return (
-                                    parsed.get('safety_score', 50),
-                                    parsed.get('keywords', []),
-                                    parsed.get('summary', 'Analysis complete.')
-                                )
+                                return {
+                                    'category_scores': parsed.get('category_scores', {}),
+                                    'total_score': parsed.get('total_score', 50),
+                                    'keywords': parsed.get('keywords', []),
+                                    'summary': parsed.get('summary', 'Analysis complete.')
+                                }
                         except:
                             pass
                             
                         # Fallback if JSON parsing fails
-                        return 50, ["content", "video"], "Analysis complete. Manual review recommended."
+                        return {
+                            'category_scores': {
+                                'Violence': 10, 'Language': 10, 'Scary Content': 10,
+                                'Sexual Content': 10, 'Substance Use': 5, 
+                                'Dangerous Behavior': 5, 'Educational Value': 0
+                            },
+                            'total_score': 50,
+                            'keywords': ["content", "video"],
+                            'summary': "Analysis complete. Manual review recommended."
+                        }
                         
         except Exception as e:
             print(f"Error generating final report: {e}")
-            return 50, ["error"], "Analysis encountered an error."
+            return {
+                'category_scores': {},
+                'total_score': 50,
+                'keywords': ["error"],
+                'summary': "Analysis encountered an error."
+            }
             
     async def analyze_youtube_video(self, youtube_url: str) -> Dict[str, Any]:
         """Complete pipeline: download and analyze YouTube video"""
@@ -415,8 +443,22 @@ class NSFKAnalyzer:
             f.write(f"Analysis Date: {analysis_result.get('analysis_timestamp', 'Unknown')}\n")
             f.write(f"Duration: {analysis_result.get('duration', 0)} seconds\n\n")
             
-            f.write(f"Safety Score: {analysis_result.get('safety_score', 'N/A')}/100\n")
+            f.write(f"Total Safety Score: {analysis_result.get('safety_score', 'N/A')}/100\n")
             f.write(f"Recommendation: {analysis_result.get('recommendation', 'Unknown')}\n\n")
+            
+            # Add category scores
+            f.write(f"Category Scores:\n")
+            category_scores = analysis_result.get('category_scores', {})
+            if category_scores:
+                f.write(f"- Violence: {category_scores.get('Violence', 0)}/20\n")
+                f.write(f"- Language: {category_scores.get('Language', 0)}/15\n")
+                f.write(f"- Scary Content: {category_scores.get('Scary Content', 0)}/20\n")
+                f.write(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/15\n")
+                f.write(f"- Substance Use: {category_scores.get('Substance Use', 0)}/10\n")
+                f.write(f"- Dangerous Behavior: {category_scores.get('Dangerous Behavior', 0)}/10\n")
+                f.write(f"- Educational Value: {category_scores.get('Educational Value', 0)}/10\n\n")
+            else:
+                f.write("No category scores available\n\n")
             
             f.write(f"Summary: {analysis_result.get('summary', 'No summary available')}\n\n")
             
@@ -448,9 +490,22 @@ async def main():
         print(f"\n{'='*50}")
         print(f"Analysis Complete!")
         print(f"{'='*50}")
-        print(f"Safety Score: {result['safety_score']}/100")
+        print(f"Total Safety Score: {result['safety_score']}/100")
         print(f"Recommendation: {result['recommendation']}")
-        print(f"Summary: {result['summary']}")
+        
+        # Display category scores
+        print(f"\nCategory Scores:")
+        category_scores = result.get('category_scores', {})
+        if category_scores:
+            print(f"- Violence: {category_scores.get('Violence', 0)}/20")
+            print(f"- Language: {category_scores.get('Language', 0)}/15")
+            print(f"- Scary Content: {category_scores.get('Scary Content', 0)}/20")
+            print(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/15")
+            print(f"- Substance Use: {category_scores.get('Substance Use', 0)}/10")
+            print(f"- Dangerous Behavior: {category_scores.get('Dangerous Behavior', 0)}/10")
+            print(f"- Educational Value: {category_scores.get('Educational Value', 0)}/10")
+        
+        print(f"\nSummary: {result['summary']}")
         print(f"Keywords: {', '.join(result['keywords'])}")
         print(f"\nFull report saved to: {result['report_path']}")
 

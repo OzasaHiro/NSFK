@@ -1,0 +1,59 @@
+NSFK Video Safety Analysis Report
+==================================================
+
+Video Title: MONKEY MAJIK - Bitten By You (feat. Spookiz The Movie)
+Video URL: https://youtube.com/watch?v=egGAWaRwJgo
+Analysis Date: 2025-06-14T12:49:49.678979
+Duration: 252 seconds
+
+Total Safety Score: 79/100
+Recommendation: Review Required
+
+Category Scores:
+- Violence: 18/20
+- Language: 15/15
+- Scary Content: 11/20
+- Sexual Content: 15/15
+- Substance Use: 10/10
+- Dangerous Behavior: 10/10
+- Educational Value: 0/10
+
+Summary: This music video features a track with vampire-themed lyrics like 'bitten by you' and 'glass of blood gung', paired with consistently dark and eerie animated visuals of monster characters with fangs and skeletal features. While free of explicit violence, profanity, or sexual content, the pervasive spooky atmosphere and imagery, including references to 'blood', may be unsettling or frightening for very young or sensitive children.
+
+Keywords: Monsters, Vampires, Dark visuals, Spooky, Animated
+
+Risk Factors:
+- Frame 3: The image is very dark and somewhat blurry, making it difficult to discern fine details. It appears to show a cartoon character, likely from the "Spookiz The Movie" as suggested by the video title, in a dimly lit, possibly hazy or smoky environment. The character is large and green-ish with a round head. There is a faint light source in the background.
+
+Based on the visible elements:
+*   **Violence/Weapons:** There is no indication of violence, weapons, or harmful actions.
+*   **Nudity/Explicit Content:** There is no nudity or explicit content.
+*   **Drug/Alcohol Use:** There is no depiction of drug or alcohol use.
+*   **Dangerous Situations:** While the environment is dark and somewhat obscured, there are no immediate signs of a dangerous situation or explicit threat.
+*   **Scary Imagery/Disturbing Visual Effects:** The character itself is from a franchise (Spookiz) typically aimed at children, featuring friendly monsters. Although the setting is dark and somewhat mysterious, the character's expression and pose are not clear enough to convey fright or menace. The overall aesthetic is more atmospheric than overtly scary. There are no disturbing visual effects apparent.
+*   **Jump Scares:** A still image cannot convey the potential for jump scares.
+
+Considering the character originates from a children's movie, and nothing in this specific still image depicts explicit danger, violence, or truly frightening elements (beyond a generally dark atmosphere), it is likely intended to be within the scope of children's entertainment.
+
+SAFE_FOR_KIDS
+- Frame 5: The image displays a dark, hazy, and somewhat ambiguous scene with a strong blue tint. Several dark, silhouetted figures are visible in the background, which appear to be monster-like characters given the video title's reference to "Spookiz The Movie."
+
+While there is no explicit violence, weapons, nudity, explicit content, or drug/alcohol use, the overall visual presentation is dark and mysterious. The indistinct, shadowy forms of the characters, combined with the low lighting and hazy atmosphere, create an eerie and potentially unsettling mood. For very young children, this dark and "spooky" aesthetic, even if the characters are from a children's franchise, could be perceived as scary or disturbing. The lack of clear detail makes the figures more ominous.
+
+Therefore, the image contains imagery that could be potentially **scary imagery** or **disturbing visual effects** for young children, especially those sensitive to dark or suspenseful themes.
+- Frame 6: The image is very dark and features a silhouetted character. The character appears to have features reminiscent of a monster, specifically what looks like bolts or hammers protruding from the sides of its head (similar to Frankenstein's monster) and a shape resembling a cross or clover on its head. The overall dark and shadowy atmosphere, combined with the character's potentially monstrous appearance, could be considered **scary imagery** for very young or sensitive children, potentially leading to fear or discomfort. While there is no explicit violence, weapons, nudity, explicit content, drug/alcohol use, or dangerous situations, the ominous lighting and character design may be unsettling.
+- Frame 7: The image is extremely dark, making it difficult to discern clear details. However, within the darkness, there appear to be faint, blurry shapes and colors. In the central-right portion, there is a curved red shape, possibly representing a mouth, with two small, elongated white or light-colored shapes above and below it, which could be interpreted as fangs or sharp teeth. There are also hints of green.
+
+Given the video title 'MONKEY MAJIK - Bitten By You (feat. Spookiz The Movie)' and the visual elements:
+1.  **Dark Imagery:** The overall darkness of the image creates a somber or potentially suspenseful atmosphere.
+2.  **Scary Imagery (Potential):** The faint, vaguely defined shapes resembling a mouth with fangs, especially in a dark setting, could be perceived as scary or unsettling by very young or sensitive children. The context of "Spookiz The Movie" often involves cartoon monsters, which while generally child-friendly, can sometimes feature designs or situations that might be frightening to a toddler or preschooler.
+
+While there is no explicit violence, nudity, explicit content, drug/alcohol use, or clear dangerous situations depicted, the dark environment combined with the faint, potentially monstrous features (fangs) could be considered **scary imagery** or **disturbing visual effects** for young children.
+- Frame 9: The image features a dark, dimly lit scene, possibly at night or in a cave-like environment, dominated by shades of deep blue and purple. A character, which appears to be an animated monster from the 'Spookiz' universe, is visible in the upper-left portion. This character has a pale, somewhat skull-like or gaunt face with prominent dark eye sockets and a mouth area that could be interpreted as skeletal or gaping. It is wearing a bright, multi-colored outfit (red and yellow are visible). The character seems to be riding on or part of a larger, dark, amorphous creature or object.
+
+**Potential Concerns for Young Children:**
+
+*   **Scary Imagery:** The character's face, with its pale, gaunt, and somewhat skull-like features, combined with the overall dark and eerie atmosphere of the scene, could be unsettling or mildly frightening for very young or sensitive children. While likely part of a "friendly monster" theme common in animated shows like 'Spookiz', the specific design of this character and the dark setting lean into a spooky aesthetic that might be too intense for some children.
+*   **Dark/Eerie Atmosphere:** The predominant dark blues and purples contribute to a sense of mystery or eeriness, which might be a bit much for toddlers or preschoolers who prefer brighter, more cheerful visuals.
+
+There is no overt violence, weapons, nudity, explicit content, drug/alcohol use, or clearly dangerous situations depicted. The primary concern is the potential for the character's appearance and the dark setting to be perceived as scary by young children.
