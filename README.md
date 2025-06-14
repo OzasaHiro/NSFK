@@ -1,2 +1,2 @@
 # NSFK? (Not Safe For Kids?)
-for Agent Hackathon
+for Weekend Agent Hack - Mountain View, June 14th, 2025
