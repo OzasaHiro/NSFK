@@ -1,17 +1,18 @@
+/* nsfK Chrome Extension Popup Styles */
+
 body {
     width: 400px;
     min-height: 300px;
     margin: 0;
     padding: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #f8fafc;
 }
 
 .container {
     background: white;
     margin: 0;
     padding: 20px;
-    border-radius: 0;
 }
 
 .header {
@@ -58,6 +59,22 @@ body {
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
 }
 
+.analyze-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.status-info {
+    margin-top: 10px;
+    text-align: center;
+}
+
+#video-info {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+}
+
 .loading {
     text-align: center;
     padding: 20px;
@@ -76,6 +93,42 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.error {
+    text-align: center;
+    padding: 20px;
+    color: #DC2626;
+}
+
+.retry-btn, .youtube-btn, .footer-btn {
+    background: #DC2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.youtube-btn {
+    background: #4F46E5;
+}
+
+.footer-btn {
+    background: #6B7280;
+    margin: 0 5px;
+}
+
+.message {
+    text-align: center;
+    padding: 20px;
+    color: #6B7280;
+}
+
+.results {
+    margin-top: 15px;
 }
 
 .video-info {
@@ -151,7 +204,7 @@ body {
     color: #6B7280;
 }
 
-.warnings-section, .positive-section, .reasoning-section, .timestamps-section {
+.warnings-section, .positive-section, .reasoning-section, .categories-section, .reddit-feedback {
     margin-bottom: 15px;
 }
 
@@ -167,13 +220,13 @@ body {
     font-size: 14px;
 }
 
-.reasoning-section h4, .timestamps-section h4 {
+.reasoning-section h4, .categories-section h4, .reddit-feedback h4 {
     color: #4B5563;
     margin: 0 0 8px 0;
     font-size: 14px;
 }
 
-.warnings-list, .positive-list, .timestamps-list {
+.warnings-list, .positive-list {
     margin: 0;
     padding-left: 20px;
     font-size: 12px;
@@ -189,11 +242,6 @@ body {
     margin-bottom: 3px;
 }
 
-.timestamps-list li {
-    color: #374151;
-    margin-bottom: 3px;
-}
-
 .reasoning-text {
     font-size: 12px;
     color: #4B5563;
@@ -201,33 +249,75 @@ body {
     margin: 0;
 }
 
+.categories-section {
+    margin-bottom: 15px;
+}
+
+.category-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.category-label {
+    width: 80px;
+    text-align: right;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.bar-container {
+    flex: 1;
+    height: 16px;
+    background: #E5E7EB;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    border-radius: 8px;
+}
+
+.bar-score {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #374151;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.reddit-feedback {
+    background: #EFF6FF;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #DBEAFE;
+}
+
 .analysis-meta {
     text-align: center;
     padding-top: 10px;
     border-top: 1px solid #E5E7EB;
     color: #9CA3AF;
+    font-size: 11px;
 }
 
-.message {
+.footer {
     text-align: center;
-    padding: 20px;
-    color: #6B7280;
-}
-
-.error {
-    text-align: center;
-    padding: 20px;
-    color: #DC2626;
-}
-
-.error button {
-    background: #DC2626;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #E5E7EB;
 }
 
 .hidden {
