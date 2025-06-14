@@ -1,0 +1,41 @@
+{
+    "manifest_version": 3,
+    "name": "nsfK? - Content Safety for Parents",
+    "version": "1.0",
+    "description": "Analyze YouTube videos for child-appropriate content",
+    
+    "permissions": [
+      "activeTab",
+      "storage"
+    ],
+    
+    "host_permissions": [
+      "https://www.youtube.com/*",
+      "https://youtube.com/*",
+      "https://ankitaj224.app.n8n.cloud/*"
+    ],
+    
+    "action": {
+      "default_popup": "popup.html",
+      "default_title": "nsfK? Content Analysis",
+      "default_icon": {
+        "16": "icons/nsfk-16.png",
+        "32": "icons/nsfk-32.png"
+      }
+    },
+    
+    "icons": {
+      "16": "icons/nsfk-16.png",
+      "32": "icons/nsfk-32.png",
+      "128": "icons/nsfk-128.png"
+    },
+    
+    "content_scripts": [{
+      "matches": ["https://www.youtube.com/watch*", "https://youtube.com/watch*"],
+      "js": ["content.js"]
+    }],
+    
+    "background": {
+      "service_worker": "background.js"
+    }
+  }

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="icons/nsfk-32.png" alt="nsfK?" class="logo">
+            <h1>nsfK?</h1>
+            <p class="tagline">Content Safety for Parents</p>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Analyzing video content...</p>
+        </div>
+        
+        <div id="error" class="error hidden">
+            <p id="error-message"></p>
+            <button onclick="retry()">Try Again</button>
+        </div>
+        
+        <div id="not-youtube" class="message hidden">
+            <p>Please navigate to a YouTube video page to analyze content.</p>
+        </div>
+        
+        <div id="results" class="results hidden">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+        
+        <div id="analyze-section" class="analyze-section">
+            <button id="analyze-btn" class="analyze-button">
+                🛡️ Analyze This Video
+            </button>
+        </div>
+    </div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>
