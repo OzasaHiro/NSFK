@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSFK Video Analyzer - Test Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .analyze-btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.hidden {
+            display: none;
+        }
+        
+        .results {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .score-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .total-score {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .total-score.safe { color: #28a745; }
+        .total-score.review { color: #ffc107; }
+        .total-score.danger { color: #dc3545; }
+        
+        .recommendation {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .recommendation.safe { 
+            background: #d4edda; 
+            color: #155724; 
+        }
+        
+        .recommendation.review { 
+            background: #fff3cd; 
+            color: #856404; 
+        }
+        
+        .recommendation.danger { 
+            background: #f8d7da; 
+            color: #721c24; 
+        }
+        
+        .categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .category {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .category-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .category-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .keyword {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Help Section Styles */
+        .help-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .help-btn:hover {
+            background: #218838;
+        }
+        
+        .help-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .help-content h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .help-item {
+            margin-bottom: 25px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .help-item h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .code-block code {
+            white-space: pre-wrap;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .score-explanation {
+            margin-top: 10px;
+        }
+        
+        .score-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .score-item.safe {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .score-item.review {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .score-item.danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .help-item ul {
+            margin-left: 20px;
+        }
+        
+        .help-item a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .help-item a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 NSFK Video Analyzer</h1>
+            <p>Analyze YouTube video safety for kids</p>
+            <button class="help-btn" onclick="toggleHelp()">📚 API Usage Guide</button>
+        </div>
+        
+        <div class="help-section hidden" id="helpSection">
+            <div class="help-content">
+                <h3>🚀 API Usage Guide</h3>
+                
+                <div class="help-item">
+                    <h4>1. Start Server</h4>
+                    <div class="code-block">
+                        <code>python3 start_api.py</code>
+                    </div>
+                    <p>Start API server at http://127.0.0.1:8000</p>
+                </div>
+                
+                <div class="help-item">
+                    <h4>2. Basic API Call</h4>
+                    <div class="code-block">
+                        <code>
+curl -X POST http://127.0.0.1:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://youtube.com/watch?v=VIDEO_ID"}'
+                        </code>
+                    </div>
+                </div>
+                
+                <div class="help-item">
+                    <h4>3. Health Check</h4>
+                    <div class="code-block">
+                        <code>curl http://127.0.0.1:8000/health</code>
+                    </div>
+                    <p>Check API server status</p>
+                </div>
+                
+                <div class="help-item">
+                    <h4>4. Response Example</h4>
+                    <div class="code-block">
+                        <code>
+{
+  "safety_score": 79,
+  "recommendation": "Review Required",
+  "category_scores": {
+    "Violence": 18,
+    "Language": 15,
+    "Scary Content": 11
+  },
+  "summary": "Video analysis summary",
+  "keywords": ["keyword1", "keyword2"]
+}
+                        </code>
+                    </div>
+                </div>
+                
+                <div class="help-item">
+                    <h4>5. Usage Examples in Other Languages</h4>
+                    <div class="tabs">
+                        <div class="tab active" onclick="showTab('python')">Python</div>
+                        <div class="tab" onclick="showTab('javascript')">JavaScript</div>
+                        <div class="tab" onclick="showTab('php')">PHP</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="python">
+                        <div class="code-block">
+                            <code>
+import requests
+
+response = requests.post(
+    "http://127.0.0.1:8000/analyze",
+    json={"url": "https://youtube.com/watch?v=VIDEO_ID"}
+)
+result = response.json()
+print(f"Safety Score: {result['safety_score']}")
+                            </code>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="javascript">
+                        <div class="code-block">
+                            <code>
+const response = await fetch('http://127.0.0.1:8000/analyze', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        url: 'https://youtube.com/watch?v=VIDEO_ID'
+    })
+});
+const result = await response.json();
+console.log('Safety Score:', result.safety_score);
+                            </code>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="php">
+                        <div class="code-block">
+                            <code>
+$data = json_encode([
+    'url' => 'https://youtube.com/watch?v=VIDEO_ID'
+]);
+
+$context = stream_context_create([
+    'http' => [
+        'method' => 'POST',
+        'header' => 'Content-Type: application/json',
+        'content' => $data
+    ]
+]);
+
+$result = file_get_contents(
+    'http://127.0.0.1:8000/analyze', 
+    false, 
+    $context
+);
+$response = json_decode($result, true);
+echo "Safety Score: " . $response['safety_score'];
+                            </code>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="help-item">
+                    <h4>6. Score Explanation</h4>
+                    <div class="score-explanation">
+                        <div class="score-item safe">
+                            <strong>80-100 points:</strong> Safe - Suitable for children
+                        </div>
+                        <div class="score-item review">
+                            <strong>60-79 points:</strong> Review Required - Parent judgment needed
+                        </div>
+                        <div class="score-item danger">
+                            <strong>0-59 points:</strong> Not Recommended - Inappropriate for children
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="help-item">
+                    <h4>7. Error Codes</h4>
+                    <ul>
+                        <li><strong>400:</strong> Invalid URL format</li>
+                        <li><strong>404:</strong> Video not found</li>
+                        <li><strong>500:</strong> Internal server error</li>
+                        <li><strong>503:</strong> API initialization error</li>
+                    </ul>
+                </div>
+                
+                <div class="help-item">
+                    <h4>📖 Detailed Documentation</h4>
+                    <p>
+                        <a href="http://127.0.0.1:8000/docs" target="_blank">
+                            📋 Swagger UI - Interactive API Documentation
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    class="url-input" 
+                    id="videoUrl" 
+                    placeholder="Enter video ID (e.g., dQw4w9WgXcQ)"
+                    value="https://www.youtube.com/watch?v="
+                >
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyzeVideo()">
+                    Analyze Video
+                </button>
+            </div>
+        </div>
+        
+        <div class="status hidden" id="status"></div>
+        
+        <div class="results" id="results">
+            <div class="score-section">
+                <div class="total-score" id="totalScore">--</div>
+                <div class="recommendation" id="recommendation">Analyzing...</div>
+            </div>
+            
+            <div class="categories" id="categories">
+                <!-- Categories will be populated here -->
+            </div>
+            
+            <div class="summary">
+                <h3>Summary</h3>
+                <p id="summaryText">Analysis results will be displayed here</p>
+                
+                <h3>Keywords</h3>
+                <div class="keywords" id="keywords">
+                    <!-- Keywords will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        async function analyzeVideo() {
+            const urlInput = document.getElementById('videoUrl');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const status = document.getElementById('status');
+            const results = document.getElementById('results');
+            
+            const url = urlInput.value.trim();
+            
+            if (!url || url === 'https://www.youtube.com/watch?v=') {
+                showStatus('error', 'Please enter a YouTube URL or video ID');
+                return;
+            }
+            
+            // Disable button and show loading
+            analyzeBtn.disabled = true;
+            analyzeBtn.textContent = 'Analyzing...';
+            results.style.display = 'none';
+            showStatus('loading', 'Downloading and analyzing video. Please wait...');
+            
+            // Add loading spinner
+            const loadingSpinner = document.createElement('div');
+            loadingSpinner.className = 'loading-spinner';
+            status.appendChild(loadingSpinner);
+            
+            try {
+                const response = await fetch(`${API_BASE}/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                showStatus('success', 'Analysis completed successfully!');
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showStatus('error', `Error occurred: ${error.message}`);
+            } finally {
+                // Re-enable button
+                analyzeBtn.disabled = false;
+                analyzeBtn.textContent = 'Analyze Video';
+            }
+        }
+        
+        function showStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = message;
+        }
+        
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            const totalScore = document.getElementById('totalScore');
+            const recommendation = document.getElementById('recommendation');
+            const categories = document.getElementById('categories');
+            const summaryText = document.getElementById('summaryText');
+            const keywords = document.getElementById('keywords');
+            
+            // Total score
+            totalScore.textContent = `${data.safety_score}/100`;
+            totalScore.className = 'total-score ' + getScoreClass(data.safety_score);
+            
+            // Recommendation
+            recommendation.textContent = data.recommendation;
+            recommendation.className = 'recommendation ' + getScoreClass(data.safety_score);
+            
+            // Categories
+            categories.innerHTML = '';
+            const categoryData = data.category_scores || {};
+            const categoryMaxScores = {
+                'Violence': 20,
+                'Language': 15,
+                'Scary Content': 20,
+                'Sexual Content': 15,
+                'Substance Use': 10,
+                'Dangerous Behavior': 10,
+                'Educational Value': 10
+            };
+            
+            Object.entries(categoryData).forEach(([name, score]) => {
+                const maxScore = categoryMaxScores[name] || 10;
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.innerHTML = `
+                    <div class="category-name">${name}</div>
+                    <div class="category-score">${score}/${maxScore}</div>
+                `;
+                categories.appendChild(categoryDiv);
+            });
+            
+            // Summary
+            summaryText.textContent = data.summary || 'Summary not available';
+            
+            // Keywords
+            keywords.innerHTML = '';
+            (data.keywords || []).forEach(keyword => {
+                const keywordSpan = document.createElement('span');
+                keywordSpan.className = 'keyword';
+                keywordSpan.textContent = keyword;
+                keywords.appendChild(keywordSpan);
+            });
+            
+            results.style.display = 'block';
+        }
+        
+        function getScoreClass(score) {
+            if (score >= 80) return 'safe';
+            if (score >= 60) return 'review';
+            return 'danger';
+        }
+        
+        function toggleHelp() {
+            const helpSection = document.getElementById('helpSection');
+            helpSection.classList.toggle('hidden');
+        }
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('videoUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeVideo();
+            }
+        });
+        
+        // Test API connection on page load
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    console.log('API connection successful');
+                } else {
+                    console.warn('API health check failed');
+                }
+            } catch (error) {
+                console.error('API connection failed:', error);
+                showStatus('error', 'Cannot connect to API server. Please start with: python3 start_api.py');
+            }
+        });
+    </script>
+</body>
+</html>
