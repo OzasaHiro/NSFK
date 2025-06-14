@@ -1,0 +1,27 @@
+# NSFK? Production Requirements
+
+# Basic packages
+yt-dlp>=2024.6.0
+opencv-python>=4.10.0
+numpy>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.32.0
+
+# Audio processing
+pydub>=0.25.1
+openai-whisper @ git+https://github.com/openai/whisper.git
+
+# PyTorch (for Whisper)
+torch>=2.0.0
+
+# Async HTTP for Gemini API
+aiohttp>=3.9.1
+nest-asyncio>=1.5.8
+
+# Scene detection
+scenedetect>=0.6.4
+
+# Additional dependencies
+click>=8.0.0
+tqdm>=4.65.0
+platformdirs>=4.0.0

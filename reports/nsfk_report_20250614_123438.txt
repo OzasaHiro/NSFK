@@ -1,0 +1,39 @@
+NSFK Video Safety Analysis Report
+==================================================
+
+Video Title: MONKEY MAJIK - Bitten By You (feat. Spookiz The Movie)
+Video URL: https://youtube.com/watch?v=egGAWaRwJgo
+Analysis Date: 2025-06-14T12:34:38.435849
+Duration: 252 seconds
+
+Safety Score: 65/100
+Recommendation: Review Required
+
+Summary: This animated music video features cartoon monsters and a vampire theme with dark, eerie visuals and lyrics about biting, tasting, and vampires. Some scenes and lyrical content may be unsettling for very young or sensitive children due to the spooky imagery and themes.
+
+Keywords: Spookiz, Vampire, Monsters, Animation, Dark-themed
+
+Risk Factors:
+- Frame 5: The image is very dark, with a blue/purple hue and a hazy or smoky atmosphere, suggesting a low-light or nighttime setting. On the left, a faint brick wall is visible. In the center and right, there are dark, indistinct, shadowy shapes that are difficult to clearly identify.
+
+While the overall mood is somewhat mysterious or somber due to the darkness and haze, there is no explicit depiction of violence, weapons, nudity, explicit content, drug/alcohol use, or dangerous situations. The shapes are too vague to constitute clearly scary imagery, disturbing visual effects, or imply jump scares (which are not applicable to a static image anyway). Given the ambiguity and lack of specific harmful content, the image appears to be generally safe.
+
+SAFE_FOR_KIDS
+- Frame 6: The image is very dark, showing a silhouetted figure that appears to be a stylized cartoon monster, likely from the 'Spookiz' franchise. The figure has a rounded head with what look like bolts or hammer-like protrusions on the sides and possibly a clover-like shape on top, resembling a friendly Frankenstein's monster character (Kongkong from Spookiz). There are hints of wide, cartoon eyes.
+
+While the low lighting makes the image appear somewhat mysterious or eerie, the character design itself, especially for those familiar with Spookiz, is generally considered cute and child-friendly. There is no violence, weapons (beyond the character's inherent design features), nudity, explicit content, drug/alcohol use, or dangerous situations depicted. There are no disturbing visual effects or elements that would constitute a jump scare from a still image.
+
+Although the darkness might create a mild sense of suspense, the overall appearance of the character is not inherently frightening or inappropriate for young children.
+
+SAFE_FOR_KIDS
+- Frame 7: The image is extremely dark, making it very difficult to discern any clear details. What is visible consists of faint, light-colored shapes against a dark, purplish background. These shapes are highly indistinct but could be interpreted as part of a face, possibly eyes or teeth, given the title referencing "Spookiz The Movie" which often features monster characters.
+
+However, due to the severe lack of clarity, it is impossible to identify any specific content that would be considered violent, involve weapons, nudity, explicit material, drug/alcohol use, dangerous situations, or overtly disturbing visual effects. While the general darkness and vague shapes might contribute to a potentially spooky or mysterious atmosphere in the context of a video, the still image itself does not present anything explicitly scary or inappropriate. There are no clear features that would be frightening or harmful for young children.
+
+Therefore, based solely on the visual information provided in this extremely dark and blurry image:
+
+SAFE_FOR_KIDS
+- Frame 9: The image displays a dark, low-light scene featuring a large, dark creature with a smaller character riding on its back. The character riding the creature has a pale, mask-like or skeletal face with dark, hollowed-out eyes. The overall atmosphere is dark and somewhat eerie due to the lighting and the appearance of the characters, particularly the rider's face which could be perceived as scary or disturbing by young children. The creature itself is large and indistinct in the darkness, adding to the potentially unsettling nature of the scene.
+
+Given the dark setting and the "spooky" appearance of the character (resembling a skull or a ghostly figure), this image could be potentially scary or unsettling for very young or sensitive children.
+- Frame 10: The image features an animated character, likely from the 'Spookiz' franchise, which typically includes cartoon monsters. The character in this frame appears to have a pale or white face with dark, hollowed-out eyes, giving it a skull-like or ghost-like appearance. The scene is very dark and atmospheric, which, combined with the monster's design, could be perceived as mildly scary or unsettling for some very young or sensitive children. While it is from an animation designed for children, the 'scary imagery' of a monster in a dark setting is present. There are no clear indications of violence, weapons, nudity, explicit content, drug/alcohol use, dangerous situations, jump scares (as it's a still image), or disturbing visual effects beyond the general aesthetic.
