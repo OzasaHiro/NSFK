@@ -4,8 +4,11 @@ NSFK Video Analyzer - Quality-Preserving Optimization
 High-performance video safety analysis that MAINTAINS or IMPROVES analysis quality
 while achieving 3-5x speed improvements through better algorithms and parallelization
 
-TEMPORARY MODIFICATION: Audio transcription processing is currently disabled.
-Search for "TEMPORARILY DISABLED" or "UNCOMMENT TO RESTORE" to re-enable audio processing.
+Unified analysis using Llama-4-Maverick-17B with multimodal support:
+- Frame analysis: Llama-4 multimodal (with Gemini fallback)
+- Audio transcription: Whisper + Llama-4 analysis
+- Comment analysis: Llama-4
+- Web reputation: Llama-4
 """
 
 import os
@@ -17,7 +20,7 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 from dotenv import load_dotenv
 import concurrent.futures
-# import hashlib  # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE when needed
+import hashlib
 from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables
@@ -30,7 +33,7 @@ from youtube_downloader import YouTubeDownloader
 import cv2
 import tempfile
 import base64
-# import numpy as np  # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE when needed
+import numpy as np
 from pydub import AudioSegment
 import whisper
 import aiohttp
@@ -226,42 +229,38 @@ class QualityPreservingNSFKAnalyzer:
         return final_frames, audio_output_filepath
     
     async def transcribe_audio_async(self, audio_file_path: str = None) -> str:
-        """Async audio transcription for parallel processing - TEMPORARILY DISABLED"""
-        # TEMPORARILY SKIPPING AUDIO TRANSCRIPTION - COMMENT OUT FOR RESTORATION
-        print("🎵 Audio transcription temporarily disabled")
-        return ""
+        """Async audio transcription for parallel processing"""
+        if not audio_file_path or not os.path.exists(audio_file_path):
+            return ""
         
-        # COMMENTED OUT FOR TEMPORARY SKIP - UNCOMMENT TO RESTORE:
-        # if not audio_file_path or not os.path.exists(audio_file_path):
-        #     return ""
-        # 
-        # # Load model in thread to not block async loop
-        # loop = asyncio.get_event_loop()
-        # 
-        # def load_and_transcribe():
-        #     self.load_whisper_model()
-        #     try:
-        #         result = self.whisper_model.transcribe(audio_file_path)
-        #         return result["text"]
-        #     except Exception as e:
-        #         print(f"Error during transcription: {e}")
-        #         return ""
-        # 
-        # print("🎵 Transcribing audio (async)...")
-        # with ThreadPoolExecutor() as executor:
-        #     transcription = await loop.run_in_executor(executor, load_and_transcribe)
-        # 
-        # print("Audio transcription complete")
-        # return transcription
+        # Load model in thread to not block async loop
+        loop = asyncio.get_event_loop()
+        
+        def load_and_transcribe():
+            self.load_whisper_model()
+            try:
+                result = self.whisper_model.transcribe(audio_file_path)
+                return result["text"]
+            except Exception as e:
+                print(f"Error during transcription: {e}")
+                return ""
+        
+        print("🎵 Transcribing audio (async)...")
+        with ThreadPoolExecutor() as executor:
+            transcription = await loop.run_in_executor(executor, load_and_transcribe)
+        
+        print("Audio transcription complete")
+        return transcription
     
     async def analyze_frames_high_throughput(self, frames_base64: List[str], video_title: str) -> List[str]:
         """
         High-throughput frame analysis with GMI API
         PROCESSES MORE FRAMES in LESS TIME with higher rate limits
         """
-        print(f"🔍 Analyzing {len(frames_base64)} frames (GMI API)")
+        print(f"🔍 Analyzing {len(frames_base64)} frames (Llama-4 multimodal via GMI API)")
         
         visual_safety_observations = []
+        self.model_usage_stats = {"Llama-4-Maverick": 0, "Gemini": 0, "Fallback": 0}  # Debug tracking
         
         # Optimized batch sizing for GMI API
         if len(frames_base64) <= 10:
@@ -310,12 +309,25 @@ class QualityPreservingNSFKAnalyzer:
                     await asyncio.sleep(0.02)  # Short delay for rate limiting
         
         print(f"✅ Frame analysis complete: {len(visual_safety_observations)} potential issues found")
+        
+        # Debug: Show model usage statistics
+        total_frames = sum(self.model_usage_stats.values())
+        if total_frames > 0:
+            print(f"📊 Model Usage Summary:")
+            for model, count in self.model_usage_stats.items():
+                if count > 0:
+                    percentage = (count / total_frames) * 100
+                    print(f"   {model}: {count}/{total_frames} frames ({percentage:.1f}%)")
+        
         return visual_safety_observations
     
     async def analyze_frame_with_gmi_optimized(self, session: aiohttp.ClientSession, 
                                                  base64_image: str, frame_number: int, 
                                                  video_title: str) -> str:
         """Optimized frame analysis with GMI API and Gemini fallback"""
+        
+        # Track which model is used for debugging
+        model_used = "Unknown"
         
         # Ultra-concise prompt for children 10 and below safety analysis
         prompt_text = (
@@ -324,61 +336,139 @@ class QualityPreservingNSFKAnalyzer:
             f"If safe for children 10 and below, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
         )
         
-        # GMI Llama-4-Scout has timeout issues, skip directly to Gemini for vision analysis
-        # Try GMI API first if enabled and available (but skip for frame analysis due to timeout)
-        if False and USE_GMI_PRIMARY and GMI_API_KEY:  # Disabled due to Llama-4-Scout timeout
-            headers = {
-                'Content-Type': 'application/json',
-                'Authorization': f'Bearer {GMI_API_KEY}'
-            }
-            
-            # Multimodal analysis with image
-            payload = {
-                "model": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
-                "messages": [{
-                    "role": "user", 
-                    "content": [
-                        {"type": "text", "text": prompt_text},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                    ]
-                }],
-                "temperature": 0.1,
-                "max_tokens": 50
-            }
-            
+        # Primary: Llama-4 with multimodal support through GMI API
+        if USE_GMI_PRIMARY and GMI_API_KEY:
             try:
-                async with session.post(GMI_API_URL, headers=headers, json=payload, timeout=10) as response:
-                    if response.status == 200:
-                        result = await response.json()
-                        
-                        if (result.get('choices') and 
-                            result['choices'][0].get('message') and 
-                            result['choices'][0]['message'].get('content')):
-                            
-                            description = result['choices'][0]['message']['content'].strip()
-                            if description == "SAFE_FOR_KIDS":
-                                return None
-                            else:
-                                return f"Frame {frame_number}: {description}"
-                        else:
-                            return f"Frame {frame_number}: No analysis available"
-                    else:
-                        # GMI API failed, fallback to Gemini
-                        pass
-            except (asyncio.TimeoutError, Exception):
-                # GMI API failed, fallback to Gemini
-                pass
+                result = await self._analyze_frame_with_llama4(session, base64_image, frame_number, video_title)
+                model_used = "Llama-4-Maverick"
+                self.model_usage_stats["Llama-4-Maverick"] += 1
+                print(f"✅ Frame {frame_number}: Analyzed with {model_used}")
+                return result
+            except Exception as e:
+                if "429" in str(e) or "rate" in str(e).lower():
+                    print(f"⚠️ GMI API rate limit hit for frame {frame_number}, falling back to Gemini")
+                    # Fallback to Gemini when rate limit hit
+                    if GEMINI_API_KEY:
+                        result = await self._analyze_frame_with_gemini(session, base64_image, frame_number, video_title)
+                        model_used = "Gemini (rate limit fallback)"
+                        self.model_usage_stats["Gemini"] += 1
+                        print(f"✅ Frame {frame_number}: Analyzed with {model_used}")
+                        return result
+                else:
+                    print(f"⚠️ GMI API error for frame {frame_number}: {str(e)[:50]}, falling back to Gemini")
+                    # Fallback to Gemini for other errors
+                    if GEMINI_API_KEY:
+                        result = await self._analyze_frame_with_gemini(session, base64_image, frame_number, video_title)
+                        model_used = "Gemini (error fallback)"
+                        self.model_usage_stats["Gemini"] += 1
+                        print(f"✅ Frame {frame_number}: Analyzed with {model_used}")
+                        return result
         
-        # Fallback to Gemini API with vision support
-        if GEMINI_API_KEY:
+        # Secondary: Gemini API as fallback
+        elif GEMINI_API_KEY:
             try:
-                return await self._analyze_frame_with_gemini(session, base64_image, frame_number, video_title)
+                result = await self._analyze_frame_with_gemini(session, base64_image, frame_number, video_title)
+                model_used = "Gemini (primary)"
+                self.model_usage_stats["Gemini"] += 1
+                print(f"✅ Frame {frame_number}: Analyzed with {model_used}")
+                return result
             except Exception:
                 pass
         
         # Final fallback to keyword-based analysis
+        model_used = "Keyword-based fallback"
+        self.model_usage_stats["Fallback"] += 1
+        print(f"⚠️ Frame {frame_number}: Using {model_used}")
         return self._fallback_frame_analysis(video_title, frame_number)
     
+    async def _analyze_frame_with_llama4(self, session: aiohttp.ClientSession,
+                                         base64_image: str, frame_number: int,
+                                         video_title: str) -> str:
+        """Analyze frame with Llama-4 multimodal through GMI API"""
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {GMI_API_KEY}'
+        }
+        
+        prompt_text = (
+            f"Check frame for children 10 and below safety: violence, weapons, nudity, sexual content, "
+            f"drugs/alcohol, scary imagery, dangerous acts, inappropriate text, content too advanced/complex. "
+            f"If safe for children 10 and below, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
+        )
+        
+        payload = {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "messages": [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt_text},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                ]
+            }],
+            "temperature": 0.1,
+            "max_tokens": 50
+        }
+        
+        try:
+            async with session.post(GMI_API_URL, headers=headers, json=payload, timeout=15) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    
+                    if (result.get('choices') and 
+                        result['choices'][0].get('message') and 
+                        result['choices'][0]['message'].get('content')):
+                        
+                        description = result['choices'][0]['message']['content'].strip()
+                        if description == "SAFE_FOR_KIDS":
+                            return None
+                        else:
+                            return f"Frame {frame_number}: {description}"
+                    else:
+                        raise Exception("Empty response from Llama-4")
+                else:
+                    raise Exception(f"Status {response.status}")
+        except Exception as e:
+            raise e  # Re-raise to trigger fallback
+    
+    async def _analyze_frame_text_only_llama4(self, session: aiohttp.ClientSession,
+                                             frame_number: int, video_title: str) -> str:
+        """Fallback text-only analysis with Llama-4 when Gemini hits rate limits"""
+        prompt = f"""Based on video title "{video_title}", frame {frame_number} safety check for kids 10 and below.
+Common risks in videos: violence, weapons, scary content, inappropriate themes.
+If title suggests safe content, assume frame is safe unless title indicates risk.
+Reply 'SAFE_FOR_KIDS' if likely safe, or describe concern in max 15 words."""
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {GMI_API_KEY}'
+        }
+        payload = {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "messages": [
+                {"role": "system", "content": "You analyze video safety for children based on context clues."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 50,
+            "temperature": 0.1
+        }
+        
+        try:
+            async with session.post(GMI_API_URL, headers=headers, json=payload, timeout=10) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    message = result.get('choices', [{}])[0].get('message', {})
+                    content = message.get('content') or message.get('reasoning_content')
+                    if content:
+                        description = content.strip()
+                        if description == "SAFE_FOR_KIDS":
+                            return None
+                        else:
+                            return f"Frame {frame_number}: {description} (context-based)"
+        except Exception:
+            pass
+        
+        return self._fallback_frame_analysis(video_title, frame_number)
+
     async def _analyze_frame_with_gemini(self, session: aiohttp.ClientSession, 
                                         base64_image: str, frame_number: int, 
                                         video_title: str) -> str:
@@ -524,13 +614,12 @@ class QualityPreservingNSFKAnalyzer:
         # Prepare comprehensive analysis data
         combined_analysis = f"Video Title: '{video_title}'\n\n"
         
-        # Include more audio context for better analysis (TEMPORARILY DISABLED)
+        # Include more audio context for better analysis
         if audio_transcript:
             combined_analysis += f"Audio Transcript ({len(audio_transcript)} chars):\n"
             combined_analysis += audio_transcript[:1500] + ("..." if len(audio_transcript) > 1500 else "") + "\n\n"
         else:
-            # TEMPORARY: Note audio processing is disabled
-            combined_analysis += "Audio Transcript: Audio processing temporarily disabled\n\n"
+            combined_analysis += "Audio Transcript: No audio transcript available\n\n"
         
         combined_analysis += f"Visual Safety Analysis ({len(visual_observations)} issues found):\n"
         if visual_observations:
@@ -634,30 +723,33 @@ class QualityPreservingNSFKAnalyzer:
         
         with tempfile.TemporaryDirectory() as temp_dir:
             # Extract frames with higher quality (more frames, scene detection)
-            frames_base64, _ = self.extract_frames_concurrent(
+            frames_base64, audio_filepath = self.extract_frames_concurrent(
                 video_filepath, temp_dir, frames_per_second=0.5  # SAME or HIGHER frame rate
             )
             
-            # TEMPORARILY MODIFIED: Skip audio processing for now
-            print("\n🚀 Starting video analysis (audio temporarily disabled)...")
+            # Parallel processing of audio and video
+            print("\n🚀 Starting parallel audio and video analysis...")
             
-            # TEMPORARILY DISABLED - UNCOMMENT TO RESTORE PARALLEL PROCESSING:
-            # audio_task = asyncio.create_task(
-            #     self.transcribe_audio_async(audio_filepath)
-            # )
-            # 
-            # frames_task = asyncio.create_task(
-            #     self.analyze_frames_high_throughput(frames_base64, video_title)
-            # )
-            # 
-            # # Wait for both to complete
-            # audio_transcript, visual_safety_observations = await asyncio.gather(
-            #     audio_task, frames_task
-            # )
+            # Create tasks for parallel processing
+            audio_task = asyncio.create_task(
+                self.transcribe_audio_async(audio_filepath)
+            )
             
-            # TEMPORARY: Only process video frames, skip audio
-            audio_transcript = ""  # Empty string for now
-            visual_safety_observations = await self.analyze_frames_high_throughput(frames_base64, video_title)
+            frames_task = asyncio.create_task(
+                self.analyze_frames_high_throughput(frames_base64, video_title)
+            )
+            
+            # Wait for both to complete
+            audio_transcript, visual_safety_observations = await asyncio.gather(
+                audio_task, frames_task
+            )
+            
+            # Analyze audio transcript if available
+            transcript_analysis_result = {"analysis": "", "safety_score": 75, "concerns": []}
+            if audio_transcript:
+                print("\n🎯 Analyzing audio transcript with Llama4...")
+                transcript_analysis_result = await self.analyze_transcript_with_gmi(audio_transcript, video_title)
+                print(f"Transcript analysis complete: {transcript_analysis_result.get('safety_score')}/100")
             
             # NEW: Add comment and web reputation analysis with rate limiting delay
             print("\n🔍 Starting comment and web reputation analysis...")
@@ -715,10 +807,10 @@ class QualityPreservingNSFKAnalyzer:
                     "rating": "Unknown"
                 }
 
-            # Calculate dynamic safety score
+            # Calculate dynamic safety score (now including transcript)
             dynamic_score_result = self.calculate_dynamic_safety_score(
                 video_content_score, comment_analysis_result, web_reputation_result,
-                report_data['category_scores']
+                report_data['category_scores'], transcript_analysis_result
             )
 
             final_safety_score = dynamic_score_result['final_score']
@@ -726,6 +818,7 @@ class QualityPreservingNSFKAnalyzer:
             # Debug output
             print(f"🔍 Dynamic scoring debug:")
             print(f"   Video content score: {video_content_score}")
+            print(f"   Transcript analysis: {transcript_analysis_result}")
             print(f"   Comment analysis: {comment_analysis_result}")
             print(f"   Web reputation: {web_reputation_result}")
             print(f"   Dynamic score result: {dynamic_score_result}")
@@ -738,10 +831,12 @@ class QualityPreservingNSFKAnalyzer:
             print(f"Efficiency: {efficiency_ratio:.1f}x realtime")
             print(f"Frames Analyzed: {len(frames_base64)}")
             print(f"Issues Found: {len(visual_safety_observations)}")
+            print(f"Audio Transcript Length: {len(audio_transcript)} chars")
             print(f"\n🎯 Final Safety Score: {final_safety_score}/100")
-            print(f"   📹 Video Content: {dynamic_score_result['component_scores']['video_content']}/100 (40% weight)")
-            print(f"   📊 Category Analysis: {dynamic_score_result['component_scores']['category_analysis']}/100 (30% weight)")
-            print(f"   💬 Comments: {dynamic_score_result['component_scores']['comments']}/100 (20% weight)")
+            print(f"   📹 Video Content: {dynamic_score_result['component_scores']['video_content']}/100 (30% weight)")
+            print(f"   🎵 Audio Transcript: {dynamic_score_result['component_scores']['audio_transcript']}/100 (20% weight)")
+            print(f"   📊 Category Analysis: {dynamic_score_result['component_scores']['category_analysis']}/100 (25% weight)")
+            print(f"   💬 Comments: {dynamic_score_result['component_scores']['comments']}/100 (15% weight)")
             print(f"   🌐 Web Reputation: {dynamic_score_result['component_scores']['web_reputation']}/100 (10% weight)")
 
             return {
@@ -755,6 +850,8 @@ class QualityPreservingNSFKAnalyzer:
                 "keywords": report_data['keywords'],
                 "recommendation": "Safe" if final_safety_score >= 80 else "Review Required" if final_safety_score >= 60 else "Not Recommended",
                 "audio_transcript": audio_transcript[:800] + "..." if len(audio_transcript) > 800 else audio_transcript,
+                "transcript_analysis": transcript_analysis_result.get("analysis", ""),
+                "transcript_concerns": transcript_analysis_result.get("concerns", []),
                 "comment_analysis": comment_analysis_result.get("analysis", ""),
                 "channel_name": reputation_data.get("channel_name", "Unknown"),
                 "web_reputation": web_reputation_result.get("analysis", "Not analyzed"),
@@ -767,10 +864,13 @@ class QualityPreservingNSFKAnalyzer:
                     "audio_length_chars": len(audio_transcript),
                     "analysis_time": total_time,
                     "efficiency_ratio": efficiency_ratio,
+                    "model_usage_stats": getattr(self, 'model_usage_stats', {}),
                     "quality_features": [
                         "concurrent_frame_extraction",
                         "histogram_scene_detection", 
                         "parallel_audio_video_processing",
+                        "llama4_multimodal_vision",
+                        "unified_llama4_analysis",
                         "high_throughput_api_batching",
                         "comprehensive_reporting"
                     ]
@@ -878,21 +978,19 @@ class QualityPreservingNSFKAnalyzer:
 
 {comments_text}
 
-Provide analysis in JSON format:
+Provide JSON only (max 50 words in analysis):
 {{
-    "analysis": "Brief 2-3 sentence analysis of overall sentiment and main concerns",
+    "analysis": "One sentence summary",
     "safety_score": 0-100,
-    "concerns": ["concern1", "concern2"]
+    "concerns": ["max 2 concerns"]
 }}
 
-Score based on SAFETY for children 10 and below (higher = safer):
-- 90-100: Very positive, educational, family-friendly comments
-- 70-89: Generally positive with minor concerns
-- 50-69: Mixed sentiment, some concerning language/topics
-- 30-49: Negative sentiment, inappropriate language/topics
-- 0-29: Very concerning, explicit content, dangerous topics
-
-Keep response concise for quick processing."""
+Safety scoring:
+90-100: Very safe
+70-89: Generally safe
+50-69: Mixed concerns
+30-49: Inappropriate
+0-29: Very unsafe"""
 
         headers = {
             'Content-Type': 'application/json',
@@ -904,7 +1002,7 @@ Keep response concise for quick processing."""
                 {"role": "system", "content": "You are an expert at analyzing social media comments for children 10 and below safety and age-appropriate content."},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 200,
+            "max_tokens": 100,
             "temperature": 0.1
         }
         
@@ -1015,26 +1113,112 @@ Keep response concise for quick processing."""
                 "web_reputation": f"Error analyzing reputation: {str(e)}"
             }
     
+    async def analyze_transcript_with_gmi(self, transcript: str, video_title: str) -> Dict[str, Any]:
+        """Analyze audio transcript using GMI API (Llama4) for child safety concerns"""
+        if not transcript:
+            return {
+                "analysis": "No transcript available for analysis",
+                "safety_score": 75,  # Neutral score when no transcript
+                "concerns": []
+            }
+
+        # Limit transcript length to avoid token overload
+        transcript_excerpt = transcript[:3000] + ("..." if len(transcript) > 3000 else "")
+
+        prompt = f"""Analyze this audio transcript from video "{video_title}" for children 10 and below safety:
+
+{transcript_excerpt}
+
+JSON only (max 40 words):
+{{
+    "analysis": "One sentence summary",
+    "safety_score": 0-100,
+    "concerns": ["max 2 items"],
+    "inappropriate_words": ["max 3 words"]
+}}"""
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {GMI_API_KEY}'
+        }
+        payload = {
+            "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+            "messages": [
+                {"role": "system", "content": "You are an expert at analyzing audio transcripts for children 10 and below safety."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": 120,
+            "temperature": 0.1
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    GMI_API_URL,
+                    headers=headers,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=15)
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        message = result.get('choices', [{}])[0].get('message', {})
+                        content = message.get('content') or message.get('reasoning_content')
+                        if content:
+                            try:
+                                # Try to parse JSON response
+                                import json
+                                json_match = re.search(r'\{.*\}', content.strip(), re.DOTALL)
+                                if json_match:
+                                    parsed = json.loads(json_match.group())
+                                    return {
+                                        "analysis": parsed.get('analysis', 'Transcript analyzed'),
+                                        "safety_score": parsed.get('safety_score', 70),
+                                        "concerns": parsed.get('concerns', []),
+                                        "inappropriate_words": parsed.get('inappropriate_words', [])
+                                    }
+                                else:
+                                    return {
+                                        "analysis": content.strip(),
+                                        "safety_score": 70,
+                                        "concerns": []
+                                    }
+                            except:
+                                return {
+                                    "analysis": content.strip(),
+                                    "safety_score": 70,
+                                    "concerns": []
+                                }
+                        else:
+                            return {
+                                "analysis": "GMI API returned empty content - transcript analysis incomplete",
+                                "safety_score": 50,
+                                "concerns": ["API_ERROR"]
+                            }
+                    else:
+                        return {
+                            "analysis": f"Transcript analysis failed (GMI API status: {response.status})",
+                            "safety_score": 50,
+                            "concerns": ["API_ERROR"]
+                        }
+        except Exception as e:
+            print(f"Error analyzing transcript: {e}")
+            return {
+                "analysis": "Transcript analysis error",
+                "safety_score": 60,
+                "concerns": ["ANALYSIS_ERROR"]
+            }
+
     async def analyze_web_reputation_with_gmi(self, channel_name: str) -> Dict[str, Any]:
         """Analyze channel reputation using GMI API with safety scoring"""
 
-        prompt = f"""Evaluate YouTube channel "{channel_name}" for children 10 and below.
+        prompt = f"""Evaluate channel "{channel_name}" for kids 10 and below.
 
-Provide analysis in JSON format:
+JSON only (max 30 words):
 {{
-    "analysis": "Brief 1-2 sentence evaluation",
+    "analysis": "One sentence verdict",
     "safety_score": 0-100,
     "rating": "Safe/Caution/Unknown"
-}}
-
-Score based on SAFETY for children 10 and below (higher = safer):
-- 90-100: Excellent educational content, verified kid-friendly
-- 70-89: Generally safe, appropriate content
-- 50-69: Mixed content, requires parental review
-- 30-49: Some concerning content, caution advised
-- 0-29: Not suitable for children, adult content
-
-Example: {{"analysis": "Educational content for children. Rating: Safe.", "safety_score": 85, "rating": "Safe"}}"""
+}}"""
 
         headers = {
             'Content-Type': 'application/json',
@@ -1046,7 +1230,7 @@ Example: {{"analysis": "Educational content for children. Rating: Safe.", "safet
                 {"role": "system", "content": "You are an expert at evaluating YouTube channels for children 10 and below safety and age-appropriate content difficulty."},
                 {"role": "user", "content": prompt}
             ],
-            "max_tokens": 150,
+            "max_tokens": 80,
             "temperature": 0.1
         }
         
@@ -1130,16 +1314,11 @@ Example: {{"analysis": "Educational content for children. Rating: Safe.", "safet
         # Combine comments for analysis (limit to avoid token overload)
         comments_text = "\n---\n".join(comments[:10])  # Analyze max 10 comments
 
-        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a children 10 and below perspective:
+        prompt = f"""Analyze comments for "{video_title}" - kids 10 and below safety.
 
 {comments_text}
 
-Provide a BRIEF analysis (2-3 sentences max):
-1. Overall sentiment (positive/negative/mixed)
-2. Main concerns or praise related to safety for children 10 and below
-3. Any red flags for parents of children 10 and below (content difficulty, inappropriate topics)
-
-Keep response concise for quick processing."""
+One sentence only: Sentiment, main safety concern if any."""
 
         payload = {
             "contents": [{
@@ -1149,7 +1328,7 @@ Keep response concise for quick processing."""
             }],
             "generationConfig": {
                 "temperature": 0.1,
-                "maxOutputTokens": 200
+                "maxOutputTokens": 80
             }
         }
 
@@ -1211,12 +1390,7 @@ Keep response concise for quick processing."""
                 "rating": "Unknown"
             }
 
-        prompt = f"""Evaluate YouTube channel "{channel_name}" for children 10 and below. Respond in 1-2 sentences only:
-1. Age-appropriate? (Yes/No)
-2. Safety rating: Safe/Caution/Unknown
-3. Brief reason (if needed)
-
-Example: "Generally safe educational content for children 10 and below. Rating: Safe." """
+        prompt = f"""Channel "{channel_name}" safety for kids 10 and below. One sentence verdict only."""
 
         payload = {
             "contents": [{
@@ -1226,7 +1400,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             }],
             "generationConfig": {
                 "temperature": 0.1,
-                "maxOutputTokens": 150
+                "maxOutputTokens": 60
             }
         }
 
@@ -1282,7 +1456,8 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
     def calculate_dynamic_safety_score(self, video_content_score: int,
                                      comment_analysis: Dict[str, Any],
                                      web_reputation: Dict[str, Any],
-                                     category_scores: Dict[str, int] = None) -> Dict[str, Any]:
+                                     category_scores: Dict[str, int] = None,
+                                     transcript_analysis: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Calculate dynamic safety score combining multiple analysis components
 
@@ -1291,6 +1466,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             comment_analysis: Dict with analysis, safety_score, concerns
             web_reputation: Dict with analysis, safety_score, rating
             category_scores: Dict with individual category scores (0-10 each)
+            transcript_analysis: Dict with analysis, safety_score, concerns from audio
 
         Returns:
             Dict with final_score, component_scores, and explanation
@@ -1300,6 +1476,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
         content_score = video_content_score
         comment_score = comment_analysis.get('safety_score', 70) if isinstance(comment_analysis, dict) else 70
         reputation_score = web_reputation.get('safety_score', 70) if isinstance(web_reputation, dict) else 70
+        transcript_score = transcript_analysis.get('safety_score', 75) if isinstance(transcript_analysis, dict) else 75
 
         # Calculate category-based score (convert from 0-70 to 0-100 scale)
         if category_scores:
@@ -1308,17 +1485,19 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
         else:
             category_score = content_score  # Fallback to content score if no categories
 
-        # Define weights for each component (optimized for child safety)
+        # Define weights for each component (optimized for child safety with audio)
         weights = {
-            'video_content': 0.40,    # 40% - Visual/audio content analysis
-            'category_analysis': 0.30, # 30% - Detailed category breakdown
-            'comments': 0.20,         # 20% - Community feedback and parent concerns
+            'video_content': 0.30,    # 30% - Visual content analysis
+            'audio_transcript': 0.20, # 20% - Audio transcript analysis
+            'category_analysis': 0.25, # 25% - Detailed category breakdown
+            'comments': 0.15,         # 15% - Community feedback and parent concerns
             'web_reputation': 0.10    # 10% - Channel reputation and history
         }
 
         # Calculate weighted average
         final_score = (
             content_score * weights['video_content'] +
+            transcript_score * weights['audio_transcript'] +
             category_score * weights['category_analysis'] +
             comment_score * weights['comments'] +
             reputation_score * weights['web_reputation']
@@ -1348,6 +1527,11 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             final_score = min(final_score, 50)  # Cap at 50 if category analysis shows major concerns
             score_adjustments.append("Category analysis reveals significant safety concerns")
 
+        # Check transcript for concerning content
+        if transcript_score < 40:
+            final_score = min(final_score, 55)  # Cap at 55 if transcript has safety issues
+            score_adjustments.append("Audio transcript contains inappropriate language or topics")
+
         # Additional category-specific adjustments
         if category_scores:
             critical_categories = ['Non-Violence', 'Family-Friendly Content', 'Non-Scary Content']
@@ -1358,7 +1542,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
                     break
 
         # Generate explanation
-        component_breakdown = f"Video Content: {content_score}/100, Category Analysis: {category_score}/100, Comments: {comment_score}/100, Channel: {reputation_score}/100"
+        component_breakdown = f"Video: {content_score}/100, Audio: {transcript_score}/100, Categories: {category_score}/100, Comments: {comment_score}/100, Channel: {reputation_score}/100"
 
         explanation_parts = [f"Combined analysis: {component_breakdown}"]
         if score_adjustments:
@@ -1368,6 +1552,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             'final_score': final_score,
             'component_scores': {
                 'video_content': content_score,
+                'audio_transcript': transcript_score,
                 'category_analysis': category_score,
                 'comments': comment_score,
                 'web_reputation': reputation_score
