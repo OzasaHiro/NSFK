@@ -5,31 +5,38 @@
 
 ## 🎯 Project Overview
 
-NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents determine if content is appropriate for children 10 and below. The system provides quick safety assessments with detailed category-based scoring, comment analysis, and channel reputation evaluation.
+NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents determine if content is appropriate for children 10 and below. The system provides comprehensive safety assessments with detailed category-based scoring, comment analysis, channel reputation evaluation, and audio transcript analysis. Features a Chrome extension with intelligent caching and a local REST API for seamless integration.
 
 ## ✨ Key Features
 
-- **🔍 Comprehensive Video Analysis** - Downloads and analyzes video content and visual elements
-- **👦 Children 10 and Below Focused** - All analysis specifically tailored for children 10 and below appropriateness
-- **🎯 Safety Scoring System** - 0-100 point scale with positive category breakdowns:
-  - Violence (20 pts max) - Absence of violence, weapons, fighting
-  - Language (15 pts max) - Clean, family-friendly language
-  - Scary Content (20 pts max) - No horror, jump scares, frightening imagery
-  - Sexual Content (15 pts max) - No inappropriate themes
-  - Substance Use (10 pts max) - No drugs, alcohol, smoking
-  - Dangerous Behavior (10 pts max) - No risky activities kids might imitate
-  - Educational Value (10 pts max) - Positive learning content for children 10 and below
-- **💬 Comment Analysis** - Analyzes YouTube comments for safety concerns and age-appropriateness
-- **🌐 Channel Reputation** - Evaluates channel/creator reputation for child safety
-- **🤖 Multi-Model AI Architecture** - Intelligent fallback system with rate limit optimization:
-  - **Video Analysis**: Gemini 2.0 Flash Experimental (vision processing)
-  - **Text Analysis**: Gemini 1.5 Flash (comments & reputation - separate rate limits)
-  - **Primary Fallback**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API
-- **📊 Category-Based Scoring** - Detailed breakdown with intuitive positive scoring
-- **💡 Smart Recommendations** - Safe/Review Required/Not Recommended guidance
-- **🔗 REST API** - FastAPI-based web service for easy integration
-- **🌐 Web Interface** - Enhanced test page with formatted bullet points and analysis timing
-- **🎨 Chrome Extension** - Browser extension with progress bar, timing display, and compact layout
+### 🔍 Core Analysis Capabilities
+- **Comprehensive Video Analysis** - Downloads and analyzes video frames with scene change detection
+- **Audio Transcript Analysis** - Whisper-based audio transcription and safety assessment
+- **Comment Analysis** - YouTube comments evaluation for safety concerns
+- **Channel Reputation** - Web-based channel/creator reputation assessment
+- **Dynamic Scoring System** - Weighted component scoring with real-time adjustments
+
+### 🎯 Safety Scoring System (Out of 10 Scale)
+- **Violence** (10 pts max) - Absence of violence, weapons, fighting
+- **Language** (10 pts max) - Clean, family-friendly language
+- **Scary Content** (10 pts max) - No horror, jump scares, frightening imagery
+- **Sexual Content** (10 pts max) - No inappropriate themes
+- **Substance Use** (10 pts max) - No drugs, alcohol, smoking
+- **Dangerous Behavior** (10 pts max) - No risky activities kids might imitate
+- **Educational Value** (10 pts max) - Positive learning content
+
+### 🤖 Multi-Model AI Architecture
+- **Primary**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API
+- **Fallback**: Gemini 1.5 Flash for rate limit scenarios
+- **Audio**: OpenAI Whisper for transcription
+- **Comments/Web**: OpenAI GPT models for text analysis
+
+### 🎨 Chrome Extension Features
+- **Smart Caching** - 1-hour cache with debugging capabilities
+- **Visual Indicators** - Red highlighting for category scores below 5
+- **Progress Tracking** - Real-time analysis progress with stage updates
+- **Cache Status** - Shows "from cache" vs fresh analysis
+- **Compact Layout** - 2-3 categories per row for space efficiency
 
 ## 🚀 Quick Start
 
@@ -83,21 +90,43 @@ curl -X POST http://127.0.0.1:8000/analyze \
 ```json
 {
   "safety_score": 85,
-  "recommendation": "Safe",
-  "category_scores": {
-    "Non-Violence": 18,
-    "Appropriate Language": 15,
-    "Non-Scary Content": 16,
-    "Family-Friendly Content": 15,
-    "Substance-Free": 10,
-    "Safe Behavior": 10,
-    "Educational Value": 1
-  },
-  "summary": "Educational TED Talk appropriate for children 10 and below with positive messaging about perseverance...",
-  "keywords": ["Education", "Motivation", "Learning", "Perseverance", "TED"],
-  "comment_analysis": "Mixed sentiment with positive educational reactions. No safety concerns detected for children 10 and below.",
+  "recommendation": "Safe for children 10 and below",
+  "title": "Educational TED Talk - How to Build Confidence",
   "channel_name": "TED",
-  "web_reputation": "TED content is generally family-friendly, focusing on educational talks. Overall rating: Safe."
+  "duration": 720,
+  "category_scores": {
+    "Violence": 9,
+    "Language": 10,
+    "Scary Content": 9,
+    "Sexual Content": 10,
+    "Substance Use": 10,
+    "Dangerous Behavior": 9,
+    "Educational Value": 8
+  },
+  "dynamic_scoring": {
+    "final_score": 85,
+    "component_scores": {
+      "video_content": 88,
+      "audio_transcript": 90,
+      "category_analysis": 82,
+      "comments": 75,
+      "web_reputation": 95
+    },
+    "weights_used": {
+      "video_content": 0.3,
+      "audio_transcript": 0.2,
+      "category_analysis": 0.25,
+      "comments": 0.15,
+      "web_reputation": 0.1
+    }
+  },
+  "summary": "Educational TED Talk appropriate for children with positive messaging about confidence building...",
+  "keywords": ["Education", "Confidence", "Learning", "TED"],
+  "comment_analysis": "Positive educational reactions. No safety concerns detected.",
+  "web_reputation": "TED content is family-friendly, focusing on educational talks.",
+  "audio_transcript": "Today I want to talk about building confidence in young people...",
+  "analysis_timestamp": "2025-06-15T10:30:45Z",
+  "processing_time": 45.2
 }
 ```
 
@@ -177,28 +206,34 @@ chrome_extension/
 
 ## 🧠 AI Model Details
 
-### Multi-Model Architecture (Rate Limit Optimized)
+### Multi-Model Architecture (Optimized for Quality & Speed)
 
-#### Video Frame Analysis
-- **Model**: Gemini 2.0 Flash Experimental
-- **Provider**: Google AI (generativelanguage.googleapis.com)
-- **Use Cases**: Visual content analysis, frame-by-frame safety assessment
-- **Advantages**: Advanced vision capabilities, optimized for image understanding
-- **Rate Limits**: Tier 1 - 1,000 RPM, 4M TPM
-
-#### Text Analysis (Comments & Reputation)
-- **Model**: Gemini 1.5 Flash
-- **Provider**: Google AI (separate rate limit pool)
-- **Use Cases**: Comment sentiment analysis, channel reputation assessment
-- **Advantages**: Fast text processing, separate rate limits from video analysis
-- **Rate Limits**: Independent from video analysis model
-
-#### Primary Fallback System
+#### Primary Video Analysis
 - **Model**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8
 - **Provider**: GMI API (https://api.gmi-serving.com)
 - **Context Window**: 1,048,576 tokens (1M tokens)
-- **Use Cases**: Comprehensive safety report generation when Gemini models fail
-- **Advantages**: Large context window, cost-effective, specialized for instruction-following
+- **Use Cases**: Primary video frame analysis, comprehensive safety assessment
+- **Advantages**: Large context window, multimodal capabilities, cost-effective
+- **Rate Limits**: High throughput with intelligent batching
+
+#### Fallback System
+- **Model**: Gemini 1.5 Flash
+- **Provider**: Google AI (generativelanguage.googleapis.com)
+- **Use Cases**: Fallback when GMI API hits rate limits
+- **Advantages**: Reliable fallback, good vision capabilities
+- **Rate Limits**: Separate pool from primary analysis
+
+#### Audio Transcription
+- **Model**: OpenAI Whisper (base model)
+- **Provider**: Local processing
+- **Use Cases**: Audio content transcription and analysis
+- **Advantages**: High accuracy, local processing, no API costs
+
+#### Text Analysis (Comments & Web Reputation)
+- **Model**: OpenAI GPT models
+- **Provider**: OpenAI API
+- **Use Cases**: Comment analysis, channel reputation assessment
+- **Advantages**: Excellent text understanding, specialized for safety analysis
 
 ## 📖 Documentation
 
@@ -216,29 +251,42 @@ chrome_extension/
 
 ## 🎨 Chrome Extension Features
 
-The included Chrome extension provides seamless YouTube integration with enhanced UX:
+The Chrome extension provides seamless YouTube integration with advanced caching and visual feedback:
 
-- **🚀 One-Click Analysis** - Analyze videos directly from YouTube pages
-- **📊 Progress Bar Interface** - Real-time progress tracking with stage-specific feedback
-- **⏱️ Analysis Timing** - Displays actual analysis duration for transparency
-- **📱 Compact Category Layout** - 2-3 categories per row for space efficiency
-- **� Formatted Text Display** - Proper bullet points for comment and reputation analysis
-- **🎯 Real-time Detection** - Automatically detects when you visit YouTube videos
-- **💾 Smart Caching** - Remembers analysis results to avoid duplicate processing
-- **🔗 Local API Integration** - Works with your local API server (no external tunnels needed)
-- **🛡️ Privacy-Focused** - All analysis happens on your local machine
+### 🚀 Core Features
+- **One-Click Analysis** - Analyze videos directly from YouTube pages
+- **Smart Caching System** - 1-hour cache with size limits (100 entries max)
+- **Cache Debugging** - Built-in cache status checking and logging
+- **Real-time Detection** - Automatically detects YouTube video navigation
+- **Local API Integration** - Works with local API server (no external dependencies)
+
+### 🎯 Visual Enhancements
+- **Progress Bar Interface** - Real-time progress with stage-specific feedback
+- **Category Score Highlighting** - Scores below 5 highlighted in red for safety concerns
+- **Cache Indicators** - Shows "from cache" vs fresh analysis timing
+- **Compact Layout** - 2-3 categories per row for optimal space usage
+- **Formatted Text Display** - Proper bullet points for analysis sections
+
+### 💾 Caching System
+- **Duration**: 1 hour per video analysis
+- **Size Limit**: 100 cached analyses maximum
+- **Auto-Cleanup**: Periodic cleanup of expired entries
+- **Debug Functions**: `nsfkDebug.checkCacheStatus()` for troubleshooting
+- **Cache Indicators**: Visual feedback when results are loaded from cache
 
 ### Extension Installation
 1. Ensure your API server is running (`python3 start_api.py`)
-2. Load the extension in Chrome Developer Mode
-3. Visit any YouTube video page
-4. Click the nsfK? extension icon to get instant safety analysis
+2. Open Chrome and navigate to `chrome://extensions/`
+3. Enable "Developer mode" (toggle in top right)
+4. Click "Load unpacked" and select the `chrome_extension` folder
+5. Visit any YouTube video page
+6. Click the nsfK? extension icon to analyze
 
-### Extension UI Improvements
-- **Progress Stages**: "Initializing → Downloading metadata → Extracting frames → Processing audio → Analyzing visuals → Running AI analysis → Generating report → Complete!"
-- **Compact Design**: Category scores displayed in grid layout (2-3 per row)
-- **Analysis Timing**: Shows completion time (e.g., "Analysis completed in 23.4s")
-- **Formatted Output**: Bullet points properly rendered for better readability
+### Debug Features
+- **Cache Status**: Check cache contents with browser console
+- **Detailed Logging**: Background script logs cache hits/misses
+- **Performance Timing**: Shows analysis vs cache retrieval times
+- **Error Handling**: Comprehensive error reporting and retry logic
 
 ## 🔮 Future Development
 - **Audio Transcription Re-enabling** - Restore Whisper-based audio analysis
