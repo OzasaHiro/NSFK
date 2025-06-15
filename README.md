@@ -191,13 +191,14 @@ chrome_extension/
 
 ## 🔧 Tech Stack
 
-- **AI/ML Multi-Model Architecture**:
-  - **Video Analysis**: Gemini 2.0 Flash Experimental (vision processing, frame analysis)
-  - **Text Analysis**: Gemini 1.5 Flash (comments & reputation - separate rate limits)
-  - **Primary Fallback**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API (1M token context)
-  - **Rate Limit Optimization**: Dual-model system prevents API conflicts
-- **Video Processing**: yt-dlp, OpenCV, PySceneDetect
-- **Audio Analysis**: Whisper for transcription (currently disabled for speed)
+- **AI/ML Unified Architecture (Llama-4 Primary)**:
+  - **Primary Model**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API (multimodal, 1M token context)
+  - **Frame Analysis**: Llama-4 multimodal with Gemini 2.0 Flash Experimental fallback
+  - **Audio Analysis**: Whisper for transcription + Llama-4 safety analysis
+  - **Text Processing**: Llama-4 primary with Gemini 1.5 Flash fallback for rate limits
+  - **Rate Limit Optimization**: Intelligent fallback system prevents API conflicts
+- **Video Processing**: yt-dlp, OpenCV, PySceneDetect (concurrent frame extraction)
+- **Audio Analysis**: Whisper for transcription + Llama-4 safety analysis (fully enabled)
 - **YouTube Integration**: YouTube Data API v3 for comments and channel data
 - **API Framework**: FastAPI with async support and comprehensive error handling
 - **Frontend**: Enhanced HTML/CSS/JavaScript with bullet point formatting and timing display
@@ -206,34 +207,31 @@ chrome_extension/
 
 ## 🧠 AI Model Details
 
-### Multi-Model Architecture (Optimized for Quality & Speed)
+### Unified Architecture (Llama-4 Primary)
 
-#### Primary Video Analysis
+#### Primary Model: Llama-4-Maverick
 - **Model**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8
 - **Provider**: GMI API (https://api.gmi-serving.com)
 - **Context Window**: 1,048,576 tokens (1M tokens)
-- **Use Cases**: Primary video frame analysis, comprehensive safety assessment
-- **Advantages**: Large context window, multimodal capabilities, cost-effective
-- **Rate Limits**: High throughput with intelligent batching
+- **Capabilities**: Multimodal (text + image analysis), instruction-following
+- **Use Cases**: Frame analysis, transcript analysis, comment analysis, comprehensive reporting
+- **Rate Limits**: 1,000 RPM with optimized batching
 
-#### Fallback System
-- **Model**: Gemini 1.5 Flash
-- **Provider**: Google AI (generativelanguage.googleapis.com)
-- **Use Cases**: Fallback when GMI API hits rate limits
-- **Advantages**: Reliable fallback, good vision capabilities
-- **Rate Limits**: Separate pool from primary analysis
+#### Video Frame Analysis (Multimodal)
+- **Primary**: Llama-4-Maverick multimodal via GMI API
+- **Fallback**: Gemini 2.0 Flash Experimental (generativelanguage.googleapis.com)
+- **Processing**: Concurrent batch processing with smart rate limiting
+- **Features**: Scene change detection + regular interval sampling
 
-#### Audio Transcription
-- **Model**: OpenAI Whisper (base model)
-- **Provider**: Local processing
-- **Use Cases**: Audio content transcription and analysis
-- **Advantages**: High accuracy, local processing, no API costs
+#### Audio Analysis
+- **Transcription**: Whisper (base model) for speech-to-text
+- **Safety Analysis**: Llama-4-Maverick for transcript content analysis
+- **Processing**: Parallel async processing with video analysis
 
-#### Text Analysis (Comments & Web Reputation)
-- **Model**: OpenAI GPT models
-- **Provider**: OpenAI API
-- **Use Cases**: Comment analysis, channel reputation assessment
-- **Advantages**: Excellent text understanding, specialized for safety analysis
+#### Text Analysis (Comments & Reputation)
+- **Primary**: Llama-4-Maverick via GMI API
+- **Fallback**: Gemini 1.5 Flash (separate rate limit pool)
+- **Features**: Sentiment analysis, safety scoring, concise summaries
 
 ## 📖 Documentation
 
@@ -289,15 +287,16 @@ The Chrome extension provides seamless YouTube integration with advanced caching
 - **Error Handling**: Comprehensive error reporting and retry logic
 
 ## 🔮 Future Development
-- **Audio Transcription Re-enabling** - Restore Whisper-based audio analysis
-- **Enhanced GMI Integration** - Leverage Llama-4-Scout multimodal capabilities for image analysis
+- **Enhanced Multimodal Integration** - Explore Llama-4-Scout and other advanced multimodal models
 - **Reddit/Wiki Integration** - Additional context from community discussions
 - **Batch Processing** - Analyze multiple videos simultaneously
-- **Custom Age Targeting** - Support for different age groups beyond children 10 and below
-- **Advanced Comment Filtering** - More sophisticated comment safety analysis
+- **Custom Age Targeting** - Support for different age groups (3-5, 6-10, 11-13, etc.)
+- **Advanced Comment Filtering** - More sophisticated comment safety analysis with sentiment patterns
 - **Real-time Analysis** - Live analysis during video playback
 - **Chrome Extension Distribution** - Publish to Chrome Web Store
 - **Mobile App** - Native mobile application for on-the-go analysis
+- **Performance Optimization** - Further speed improvements and model efficiency
+- **Advanced Caching** - Persistent cache across browser sessions
 
 ## 🤝 Contributing
 
