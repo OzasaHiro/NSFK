@@ -1,0 +1,41 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: A World Without... Children
+Video URL: https://youtube.com/watch?v=Phu3cuPi474
+Analysis Date: 2025-06-14T22:04:33.286296
+Duration: 69 seconds
+
+Safety Score: 73/100
+Recommendation: Review Required
+
+Quality Metrics:
+- Frames Analyzed: 58
+- Visual Issues Found: 47
+- Analysis Time: 44.7s
+- Efficiency Ratio: 1.5x realtime
+
+Category Scores:
+- Violence: 0/20
+- Language: 0/15
+- Scary Content: 0/20
+- Sexual Content: 0/15
+- Substance Use: 0/10
+- Dangerous Behavior: 0/10
+- Educational Value: 6/10
+
+Summary: Content may require parental review for 10-year-olds. Some potential concerns detected in title or content.
+
+Keywords: fallback, analysis
+
+Risk Factors:
+1. Frame 1: Gemini API error - 429
+2. Frame 2: Gemini API error - 429
+3. Frame 5: Gemini API error - 429
+4. Frame 6: Gemini API error - 429
+5. Frame 8: Gemini API error - 429
+6. Frame 12: Weapons: Poster depicts a gun.
+SAFE_FOR_KIDS
+7. Frame 13: Gemini API error - 429
+8. Frame 14: Weapons: Poster depicts a gun.
+SAFE_FOR_KIDS

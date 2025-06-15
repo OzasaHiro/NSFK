@@ -1,0 +1,53 @@
+{
+  "video_url": "https://youtube.com/watch?v=020g-0hhCAU",
+  "title": "Baby Shark | @CoComelon Nursery Rhymes & Kids Songs",
+  "duration": 144,
+  "safety_score": 96,
+  "category_scores": {
+    "Non-Violence": 20,
+    "Appropriate Language": 15,
+    "Non-Scary Content": 18,
+    "Family-Friendly Content": 15,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 8
+  },
+  "summary": "The 'Baby Shark' video by CoComelon is generally safe for 10-year-olds, featuring a popular children's song with no violence, profanity, or scary content. Although some younger children might find certain scenes too intense, it's largely suitable for kids around this age. The content is family-friendly and educational.",
+  "risk_factors": [
+    "Frame 1: Gemini API error - 429",
+    "Frame 3: Gemini API error - 429",
+    "Frame 7: Gemini API error - 429",
+    "Frame 9: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 13: Gemini API error - 429",
+    "Frame 15: Gemini API error - 429",
+    "Frame 21: Gemini API error - 429"
+  ],
+  "keywords": [
+    "nursery rhymes",
+    "kids songs",
+    "baby shark",
+    "coocomelon",
+    "children's entertainment"
+  ],
+  "recommendation": "Safe",
+  "audio_transcript": "",
+  "comment_analysis": "Comments are disabled for this video",
+  "channel_name": "Cocomelon - Nursery Rhymes",
+  "web_reputation": "1. Age-appropriate: No\n2. Safety rating: Safe\nThe channel's content is geared towards much younger children, with simple nursery rhymes and animations that may be too childish for 10-year-olds.",
+  "analysis_timestamp": "2025-06-14T22:27:15.915352",
+  "quality_metrics": {
+    "frames_analyzed": 180,
+    "visual_issues_found": 167,
+    "audio_length_chars": 0,
+    "analysis_time": 17.68012523651123,
+    "efficiency_ratio": 8.144738686727488,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

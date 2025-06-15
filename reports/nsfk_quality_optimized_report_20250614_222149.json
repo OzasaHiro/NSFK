@@ -1,0 +1,53 @@
+{
+  "video_url": "https://youtube.com/watch?v=Phu3cuPi474",
+  "title": "A World Without... Children",
+  "duration": 69,
+  "safety_score": 70,
+  "category_scores": {
+    "Non-Violence": 15,
+    "Appropriate Language": 15,
+    "Non-Scary Content": 10,
+    "Family-Friendly Content": 5,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 5
+  },
+  "summary": "The video contains potentially disturbing content such as childbirth and violence, making it unsuitable for 10-year-olds. Although some frames are marked as safe, the overall content raises concerns. Parents should review the content before allowing their children to watch.",
+  "risk_factors": [
+    "Frame 1: Gemini API error - 429",
+    "Frame 4: Gemini API error - 429",
+    "Frame 5: Inappropriate. The image depicts a woman giving birth, which is a complex and potentially disturbing topic.",
+    "Frame 6: Inappropriate. Depicts childbirth, which is a complex and potentially sensitive topic for young children.",
+    "Frame 7: Gemini API error - 429",
+    "Frame 10: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 12: Gemini API error - 429"
+  ],
+  "keywords": [
+    "childbirth",
+    "violence",
+    "weapons",
+    "death race",
+    "sensitive topics"
+  ],
+  "recommendation": "Review Required",
+  "audio_transcript": "",
+  "comment_analysis": "Here's a brief analysis:\n\n1. The overall sentiment is mixed, with some comments expressing sadness or concern about a world without children, while others make neutral or unrelated statements.\n2. Main concerns or praise related to safety are not directly addressed, but some comments touch on mature themes like pedophilia.\n3. A red flag is raised by the comment mentioning pedophiles, which is an inappropriate and potentially disturbing topic for 10-year-olds.",
+  "channel_name": "A World Without",
+  "web_reputation": "1. Age-appropriate: No\n2. Safety rating: Caution\nThe channel \"A World Without\" often discusses mature and complex hypothetical scenarios that may not be suitable for 10-year-olds, and some content may be too intense or disturbing.",
+  "analysis_timestamp": "2025-06-14T22:21:49.485050",
+  "quality_metrics": {
+    "frames_analyzed": 58,
+    "visual_issues_found": 49,
+    "audio_length_chars": 0,
+    "analysis_time": 17.052223920822144,
+    "efficiency_ratio": 4.046393028873227,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

@@ -50,6 +50,8 @@ GMI_API_URL = "https://api.gmi-serving.com/v1/chat/completions"
 # Backup API keys for fallback (GMI currently timing out)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Fallback #1 - ACTIVE
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent"
+# Separate model for text analysis to avoid rate limit conflicts
+GEMINI_TEXT_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")  # Fallback #2 - ACTIVE
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")  # YouTube Data API v3 key
 
@@ -662,8 +664,8 @@ class QualityPreservingNSFKAnalyzer:
             youtube_url = f"https://youtube.com/watch?v={video_info.get('video_id', '')}"
             
             # Add delay to avoid rate limiting after frame analysis
-            print("⏱️  Adding brief delay to avoid API rate limits...")
-            await asyncio.sleep(2)  # 2-second delay to respect rate limits
+            print("⏱️  Adding delay to avoid API rate limits...")
+            await asyncio.sleep(5)  # 5-second delay to respect rate limits
             
             comment_task = asyncio.create_task(
                 self.get_youtube_comments(youtube_url)
@@ -681,7 +683,7 @@ class QualityPreservingNSFKAnalyzer:
             comment_analysis = ""
             if comments and not comment_error:
                 # Add small delay before comment analysis API call
-                await asyncio.sleep(1)
+                await asyncio.sleep(3)
                 comment_analysis = await self.analyze_comments_with_gmi(comments, video_title)
             elif comment_error:
                 comment_analysis = comment_error
@@ -875,9 +877,11 @@ Keep response concise for quick processing."""
                     else:
                         return f"Comment analysis failed (GMI API status: {response.status})"
         except asyncio.TimeoutError:
-            return "Comment analysis timeout - fallback analysis used"
+            # Fallback to Gemini API
+            return await self.analyze_comments_with_gemini_fallback(comments, video_title)
         except Exception as e:
-            return f"Comment analysis error: {str(e)}"
+            # Fallback to Gemini API
+            return await self.analyze_comments_with_gemini_fallback(comments, video_title)
     
     async def get_channel_info_and_web_reputation(self, youtube_url: str) -> Dict[str, str]:
         """Get channel info and analyze web reputation"""
@@ -971,10 +975,128 @@ Example: "Generally safe educational content for 10-year-olds. Rating: Safe." ""
                     else:
                         return f"Reputation analysis failed (GMI API status: {response.status})"
         except asyncio.TimeoutError:
-            return "Reputation analysis timeout - fallback analysis used"
+            # Fallback to Gemini API
+            return await self.analyze_web_reputation_with_gemini_fallback(channel_name)
         except Exception as e:
-            return f"Reputation analysis error: {str(e)}"
-    
+            # Fallback to Gemini API
+            return await self.analyze_web_reputation_with_gemini_fallback(channel_name)
+
+    async def analyze_comments_with_gemini_fallback(self, comments: List[str], video_title: str) -> str:
+        """Fallback comment analysis using Gemini 1.5 Flash (separate rate limits)"""
+        if not GEMINI_API_KEY:
+            return "Comment analysis failed - no fallback API available"
+
+        if not comments:
+            return "No comments available for analysis"
+
+        # Combine comments for analysis (limit to avoid token overload)
+        comments_text = "\n---\n".join(comments[:10])  # Analyze max 10 comments
+
+        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a 10-year-old child perspective:
+
+{comments_text}
+
+Provide a BRIEF analysis (2-3 sentences max):
+1. Overall sentiment (positive/negative/mixed)
+2. Main concerns or praise related to safety for 10-year-olds
+3. Any red flags for parents of 10-year-olds (content difficulty, inappropriate topics)
+
+Keep response concise for quick processing."""
+
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": prompt
+                }]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 200
+            }
+        }
+
+        # Reduced delay since using different model with separate rate limits
+        print("⏱️  Using Gemini 1.5 Flash for comment analysis (separate rate limits)...")
+        await asyncio.sleep(2)  # Reduced delay for different model
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{GEMINI_TEXT_API_URL}?key={GEMINI_API_KEY}",
+                    headers={'Content-Type': 'application/json'},
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if (result.get('candidates') and
+                            result['candidates'][0].get('content') and
+                            result['candidates'][0]['content'].get('parts')):
+
+                            content = result['candidates'][0]['content']['parts'][0]['text'].strip()
+                            return content
+                        else:
+                            return "Gemini 1.5 Flash returned empty content - comment analysis incomplete"
+                    else:
+                        return f"Comment analysis failed (Gemini 1.5 Flash status: {response.status})"
+        except asyncio.TimeoutError:
+            return "Comment analysis timeout - all APIs failed"
+        except Exception as e:
+            return f"Comment analysis error: {str(e)[:100]}"
+
+    async def analyze_web_reputation_with_gemini_fallback(self, channel_name: str) -> str:
+        """Fallback web reputation analysis using Gemini 1.5 Flash (separate rate limits)"""
+        if not GEMINI_API_KEY:
+            return "Reputation analysis failed - no fallback API available"
+
+        prompt = f"""Evaluate YouTube channel "{channel_name}" for 10-year-olds. Respond in 1-2 sentences only:
+1. Age-appropriate? (Yes/No)
+2. Safety rating: Safe/Caution/Unknown
+3. Brief reason (if needed)
+
+Example: "Generally safe educational content for 10-year-olds. Rating: Safe." """
+
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": prompt
+                }]
+            }],
+            "generationConfig": {
+                "temperature": 0.1,
+                "maxOutputTokens": 150
+            }
+        }
+
+        # Reduced delay since using different model with separate rate limits
+        print("⏱️  Using Gemini 1.5 Flash for reputation analysis (separate rate limits)...")
+        await asyncio.sleep(2)  # Reduced delay for different model
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{GEMINI_TEXT_API_URL}?key={GEMINI_API_KEY}",
+                    headers={'Content-Type': 'application/json'},
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
+                    if response.status == 200:
+                        result = await response.json()
+                        if (result.get('candidates') and
+                            result['candidates'][0].get('content') and
+                            result['candidates'][0]['content'].get('parts')):
+
+                            content = result['candidates'][0]['content']['parts'][0]['text'].strip()
+                            return content
+                        else:
+                            return "Gemini 1.5 Flash returned empty content - reputation analysis incomplete"
+                    else:
+                        return f"Reputation analysis failed (Gemini 1.5 Flash status: {response.status})"
+        except asyncio.TimeoutError:
+            return "Reputation analysis timeout - all APIs failed"
+        except Exception as e:
+            return f"Reputation analysis error: {str(e)[:100]}"
+
     def save_report(self, analysis_result: Dict[str, Any]) -> str:
         """Save comprehensive analysis report"""
         reports_dir = "reports"

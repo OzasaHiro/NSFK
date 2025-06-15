@@ -1,0 +1,53 @@
+{
+  "video_url": "https://youtube.com/watch?v=FOf7HI17RZA",
+  "title": "Destiny - Kids with Disabilities",
+  "duration": 127,
+  "safety_score": 98,
+  "category_scores": {
+    "Non-Violence": 20,
+    "Appropriate Language": 15,
+    "Non-Scary Content": 20,
+    "Family-Friendly Content": 15,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 8
+  },
+  "summary": "The video 'Destiny - Kids with Disabilities' appears to be a safe and educational content for 10-year-olds, promoting inclusion and diversity. Although the audio transcript is unavailable, the visual analysis suggests a positive and non-violent tone. However, some frames were not analyzed due to API errors.",
+  "risk_factors": [
+    "Frame 4: Gemini API error - 429",
+    "Frame 5: Gemini API error - 429",
+    "Frame 6: Gemini API error - 429",
+    "Frame 7: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 18: Gemini API error - 429",
+    "Frame 20: Gemini API error - 429",
+    "Frame 21: Gemini API error - 429"
+  ],
+  "keywords": [
+    "kids",
+    "disabilities",
+    "inclusion",
+    "education",
+    "diversity"
+  ],
+  "recommendation": "Safe",
+  "audio_transcript": "",
+  "comment_analysis": "Comments are disabled for this video",
+  "channel_name": "Attitude",
+  "web_reputation": "1. Age-appropriate: No\n2. Safety rating: Caution\nThe \"Attitude\" YouTube channel appears to feature strong language, mature themes, and potentially objectionable content not suitable for 10-year-olds.",
+  "analysis_timestamp": "2025-06-14T21:27:32.551872",
+  "quality_metrics": {
+    "frames_analyzed": 137,
+    "visual_issues_found": 124,
+    "audio_length_chars": 0,
+    "analysis_time": 35.453054904937744,
+    "efficiency_ratio": 3.582201881912072,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

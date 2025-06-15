@@ -36,8 +36,11 @@ async function checkYouTubePage() {
 // Analyze the current video
 async function analyzeCurrentVideo() {
     try {
+        // Start timing the analysis
+        analysisStartTime = Date.now();
+
         showLoading();
-        
+
         const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
         
         // Send analysis request to background script
@@ -49,37 +52,51 @@ async function analyzeCurrentVideo() {
         if (!response.success) {
             throw new Error(response.error || 'Analysis failed');
         }
-        
-        displayResults(response);
-        
+
+        // End timing the analysis
+        analysisEndTime = Date.now();
+        const analysisTime = analysisEndTime - analysisStartTime;
+
+        // Complete progress before showing results
+        completeProgress();
+
+        // Small delay to show completion, then display results
+        setTimeout(() => {
+            displayResults(response, analysisTime);
+        }, 500);
+
     } catch (error) {
         console.error('Analysis failed:', error);
+
+        // Reset timing on error
+        analysisStartTime = null;
+        analysisEndTime = null;
+
         showError(error.message);
-    } finally {
         hideLoading();
     }
 }
 
 // Display the analysis results
-function displayResults(response) {
+function displayResults(response, analysisTime = null) {
     const data = response.data || {};
-    
+
     // Get values with defaults
     const safetyScore = data.safetyScore || 0;
     const recommendation = data.recommendation || 'No recommendation';
     const summary = data.summary || 'No summary available';
     const categories = data.categories || {};
     const keywords = data.keywords || [];
-    
+
     // Build HTML
     let html = `
         <div class="score-section">
             <div class="total-score ${getScoreClass(safetyScore)}">${safetyScore}/100</div>
             <div class="recommendation ${getScoreClass(safetyScore)}">${recommendation}</div>
         </div>
-        
+
         <div class="categories">`;
-    
+
     // Add categories
     for (const [name, score] of Object.entries(categories)) {
         html += `
@@ -88,13 +105,13 @@ function displayResults(response) {
                 <div class="category-score">${score}/${getCategoryMax(name)}</div>
             </div>`;
     }
-    
+
     html += `</div>
-        
+
         <div class="summary">
             <h3>Summary</h3>
             <p>${summary}</p>`;
-    
+
     // Add keywords if any
     if (keywords.length > 0) {
         html += `<h3>Keywords</h3><div class="keywords">`;
@@ -103,40 +120,67 @@ function displayResults(response) {
         }
         html += `</div>`;
     }
-    
+
     html += `</div>`;
-    
+
     // Add additional analysis if available
     if (data.channel || data.webReputation || data.commentAnalysis) {
         html += `<div class="additional-analysis"><h3>Additional Analysis</h3>`;
-        
-        if (data.channel) {
+
+        if (data.channel && data.channel !== 'Unknown Channel') {
             html += `
                 <div class="analysis-section">
                     <h4>📺 Channel Information</h4>
-                    <p>${data.channel}</p>
+                    <p class="channel-info">${data.channel}</p>
                 </div>`;
         }
-        
+
         if (data.webReputation) {
+            const formattedWebReputation = formatBulletPoints(data.webReputation);
             html += `
                 <div class="analysis-section">
                     <h4>🌐 Web Reputation</h4>
-                    <p>${data.webReputation}</p>
+                    ${formattedWebReputation}
                 </div>`;
         }
-        
+
         if (data.commentAnalysis) {
-            html += `
-                <div class="analysis-section">
-                    <h4>💬 Comment Analysis</h4>
-                    <p>${data.commentAnalysis}</p>
-                </div>`;
+            const isError = data.commentAnalysis.includes('disabled') ||
+                           data.commentAnalysis.includes('not configured') ||
+                           data.commentAnalysis.includes('Error') ||
+                           data.commentAnalysis.includes('quota exceeded');
+
+            if (isError) {
+                html += `
+                    <div class="analysis-section">
+                        <h4>💬 Comment Analysis</h4>
+                        <p style="color: #856404; font-style: italic;">${data.commentAnalysis}</p>
+                    </div>`;
+            } else {
+                const formattedCommentAnalysis = formatBulletPoints(data.commentAnalysis);
+                html += `
+                    <div class="analysis-section">
+                        <h4>💬 Comment Analysis</h4>
+                        ${formattedCommentAnalysis}
+                    </div>`;
+            }
         }
-        
+
         html += `</div>`;
     }
-    
+
+    // Add analysis timing information
+    if (analysisTime) {
+        const formattedTime = formatAnalysisTime(analysisTime);
+        html += `
+            <div class="analysis-timing">
+                <div class="timing-info">
+                    <span class="timing-icon">⏱️</span>
+                    <span class="timing-text">Analysis completed in ${formattedTime}</span>
+                </div>
+            </div>`;
+    }
+
     // Set the HTML and show results
     document.getElementById('results').innerHTML = html;
     showElement('results');
@@ -150,15 +194,113 @@ function getScoreClass(score) {
     return 'danger';
 }
 
+function formatAnalysisTime(milliseconds) {
+    const seconds = milliseconds / 1000;
+
+    if (seconds < 60) {
+        return `${seconds.toFixed(1)}s`;
+    } else if (seconds < 3600) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+        return `${minutes}m ${remainingSeconds}s`;
+    } else {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes}m`;
+    }
+}
+
+function formatBulletPoints(text) {
+    if (!text) return '<p>No information available</p>';
+
+    // Common bullet point patterns to detect
+    const bulletPatterns = [
+        /^[•·▪▫‣⁃]\s*/gm,  // Unicode bullet points
+        /^[-*]\s*/gm,       // Dash or asterisk bullets
+        /^\d+\.\s*/gm,      // Numbered lists
+        /^[a-zA-Z]\.\s*/gm  // Letter bullets
+    ];
+
+    // Check if text contains bullet points
+    const hasBullets = bulletPatterns.some(pattern => pattern.test(text));
+
+    if (hasBullets) {
+        // Split text into lines
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+        let html = '';
+        let currentList = [];
+        let inList = false;
+
+        for (const line of lines) {
+            // Check if line is a bullet point
+            const isBullet = bulletPatterns.some(pattern => pattern.test(line));
+
+            if (isBullet) {
+                // Remove bullet characters and add to list
+                let cleanLine = line;
+                bulletPatterns.forEach(pattern => {
+                    cleanLine = cleanLine.replace(pattern, '');
+                });
+                currentList.push(cleanLine.trim());
+                inList = true;
+            } else {
+                // If we were in a list, close it
+                if (inList && currentList.length > 0) {
+                    html += '<ul class="bullet-list">';
+                    currentList.forEach(item => {
+                        html += `<li>${item}</li>`;
+                    });
+                    html += '</ul>';
+                    currentList = [];
+                    inList = false;
+                }
+
+                // Add regular paragraph
+                if (line.length > 0) {
+                    html += `<p>${line}</p>`;
+                }
+            }
+        }
+
+        // Close any remaining list
+        if (inList && currentList.length > 0) {
+            html += '<ul class="bullet-list">';
+            currentList.forEach(item => {
+                html += `<li>${item}</li>`;
+            });
+            html += '</ul>';
+        }
+
+        return html || `<p>${text}</p>`;
+    } else {
+        // No bullet points detected, return as regular paragraph
+        return `<p>${text}</p>`;
+    }
+}
+
 function getCategoryMax(name) {
     const maxScores = {
+        // API returns these category names
+        'Violence': 20,
+        'Language': 15,
+        'ScaryContent': 20,
+        'Scary Content': 20,
+        'SexualContent': 15,
+        'Sexual Content': 15,
+        'SubstanceUse': 10,
+        'Substance Use': 10,
+        'DangerousBehavior': 10,
+        'Dangerous Behavior': 10,
+        'EducationalValue': 10,
+        'Educational Value': 10,
+        // Legacy names for backward compatibility
         'Non-Violence': 20,
         'Appropriate Language': 15,
         'Non-Scary Content': 20,
         'Family-Friendly Content': 15,
         'Substance-Free': 10,
-        'Safe Behavior': 10,
-        'Educational Value': 10
+        'Safe Behavior': 10
     };
     return maxScores[name] || 10;
 }
@@ -177,17 +319,21 @@ function showLoading() {
     showElement('loading');
     hideElement('results');
     hideElement('error');
-    
+
     const btn = document.getElementById('analyze-btn');
     if (btn) {
         btn.disabled = true;
         btn.textContent = 'Analyzing...';
     }
+
+    // Start progress simulation
+    startProgressSimulation();
 }
 
 function hideLoading() {
     hideElement('loading');
-    
+    resetProgress();
+
     const btn = document.getElementById('analyze-btn');
     if (btn) {
         btn.disabled = false;
@@ -259,27 +405,29 @@ style.textContent = `
     
     .categories {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 10px;
-        margin: 20px 0;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 6px;
+        margin: 12px 0;
     }
-    
+
     .category {
         background: white;
-        padding: 12px;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 8px;
+        border-radius: 6px;
+        border-left: 3px solid #667eea;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
     .category-name {
         font-weight: bold;
         color: #333;
-        font-size: 0.9em;
+        font-size: 0.8em;
+        line-height: 1.2;
+        margin-bottom: 2px;
     }
-    
+
     .category-score {
-        font-size: 1.3em;
+        font-size: 1.1em;
         font-weight: bold;
         color: #667eea;
     }
@@ -331,6 +479,11 @@ style.textContent = `
         color: #17a2b8;
         margin-bottom: 8px;
     }
+
+    .channel-info {
+        font-weight: bold;
+        color: #495057;
+    }
     
     .loading-spinner {
         border: 4px solid #f3f3f3;
@@ -361,5 +514,81 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Progress bar functionality
+let progressInterval = null;
+let currentProgress = 0;
+let analysisStartTime = null;
+let analysisEndTime = null;
+
+function startProgressSimulation() {
+    currentProgress = 0;
+    updateProgress(0, 'Initializing analysis...');
+
+    // Simulate realistic progress stages
+    const progressStages = [
+        { progress: 10, text: 'Downloading video metadata...', delay: 500 },
+        { progress: 25, text: 'Extracting video frames...', delay: 1000 },
+        { progress: 40, text: 'Processing audio content...', delay: 1500 },
+        { progress: 55, text: 'Analyzing visual content...', delay: 2000 },
+        { progress: 70, text: 'Running AI safety analysis...', delay: 2500 },
+        { progress: 85, text: 'Generating safety report...', delay: 1000 },
+        { progress: 95, text: 'Finalizing results...', delay: 500 }
+    ];
+
+    let stageIndex = 0;
+
+    progressInterval = setInterval(() => {
+        if (stageIndex < progressStages.length) {
+            const stage = progressStages[stageIndex];
+            updateProgress(stage.progress, stage.text);
+            stageIndex++;
+        } else {
+            // Keep at 95% until actual completion
+            updateProgress(95, 'Almost done...');
+        }
+    }, 800);
+}
+
+function updateProgress(percentage, text) {
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+
+    if (progressFill) {
+        progressFill.style.width = percentage + '%';
+    }
+
+    if (progressText) {
+        progressText.textContent = text;
+    }
+
+    currentProgress = percentage;
+}
+
+function completeProgress() {
+    updateProgress(100, 'Analysis complete!');
+
+    // Clear the interval
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+
+    // Brief delay to show completion
+    setTimeout(() => {
+        hideLoading();
+    }, 500);
+}
+
+function resetProgress() {
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+    currentProgress = 0;
+    analysisStartTime = null;
+    analysisEndTime = null;
+    updateProgress(0, 'Ready to analyze...');
+}
 
 console.log('nsfK? Popup initialized');

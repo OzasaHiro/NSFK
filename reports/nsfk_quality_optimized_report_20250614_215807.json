@@ -1,0 +1,50 @@
+{
+  "video_url": "https://youtube.com/watch?v=Phu3cuPi474",
+  "title": "A World Without... Children",
+  "duration": 69,
+  "safety_score": 73,
+  "category_scores": {
+    "Non-Violence": 13,
+    "Appropriate Language": 12,
+    "Non-Scary Content": 14,
+    "Family-Friendly Content": 12,
+    "Substance-Free": 8,
+    "Safe Behavior": 8,
+    "Educational Value": 6
+  },
+  "summary": "Content may require parental review for 10-year-olds. Some potential concerns detected in title or content.",
+  "risk_factors": [
+    "Frame 2: Gemini API error - 429",
+    "Frame 5: Inappropriate. The image depicts a woman giving birth, which is a complex topic.",
+    "Frame 6: Gemini API error - 429",
+    "Frame 7: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 12: Weapons: Poster depicts a gun.\nSAFE_FOR_KIDS",
+    "Frame 13: Gemini API error - 429",
+    "Frame 14: Weapons: Poster depicts a gun.\nSAFE_FOR_KIDS"
+  ],
+  "keywords": [
+    "fallback",
+    "analysis"
+  ],
+  "recommendation": "Review Required",
+  "audio_transcript": "",
+  "comment_analysis": "Comment analysis timeout - fallback analysis used",
+  "channel_name": "A World Without",
+  "web_reputation": "Reputation analysis timeout - fallback analysis used",
+  "analysis_timestamp": "2025-06-14T21:58:07.254196",
+  "quality_metrics": {
+    "frames_analyzed": 58,
+    "visual_issues_found": 48,
+    "audio_length_chars": 0,
+    "analysis_time": 44.175716161727905,
+    "efficiency_ratio": 1.5619441176095494,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

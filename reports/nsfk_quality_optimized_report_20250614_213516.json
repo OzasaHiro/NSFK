@@ -1,0 +1,52 @@
+{
+  "video_url": "https://youtube.com/watch?v=Phu3cuPi474",
+  "title": "A World Without... Children",
+  "duration": 69,
+  "safety_score": 70,
+  "category_scores": {
+    "Non-Violence": 12,
+    "Appropriate Language": 15,
+    "Non-Scary Content": 10,
+    "Family-Friendly Content": 8,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 5
+  },
+  "summary": "The video 'A World Without... Children' contains some mature themes and violent imagery, such as a 'Death Race' poster and a man holding a gun, which may not be suitable for all 10-year-olds. While it may spark interesting discussions, parental discretion is advised due to some potentially disturbing content. The video's educational value is limited, and its overall safety score is moderate.",
+  "risk_factors": [
+    "Frame 2: Gemini API error - 429",
+    "Frame 4: Gemini API error - 429",
+    "Frame 5: Inappropriate. The image depicts a woman giving birth, which is a complex topic.",
+    "Frame 6: Gemini API error - 429",
+    "Frame 8: Gemini API error - 429",
+    "Frame 12: Gemini API error - 429",
+    "Frame 13: Violence. \"Death Race\" poster and a man holding a gun could be concerning.",
+    "Frame 14: Weapons: Poster depicts a gun.\nSAFE_FOR_KIDS"
+  ],
+  "keywords": [
+    "complex themes",
+    "violence",
+    "weapons",
+    "mature topics"
+  ],
+  "recommendation": "Review Required",
+  "audio_transcript": "",
+  "comment_analysis": "1. Overall sentiment: Mixed, with some comments expressing sadness or concern about a world without children, while others make neutral or unrelated statements.\n2. Main concerns or praise: Some comments praise the video, while others raise concerns about the implications of a world without children.\n3. Red flags: The comment \"Well, at least pedophiles can't exist in this world... Or do they?\" raises a significant red flag due to its reference to a sensitive and potentially disturbing topic.",
+  "channel_name": "A World Without",
+  "web_reputation": "1. Age-appropriate: No\n2. Safety rating: Caution\nThe channel \"A World Without\" often discusses mature and complex hypothetical scenarios that may not be suitable for 10-year-olds, and some content may be too intense or disturbing.",
+  "analysis_timestamp": "2025-06-14T21:35:16.611038",
+  "quality_metrics": {
+    "frames_analyzed": 58,
+    "visual_issues_found": 49,
+    "audio_length_chars": 0,
+    "analysis_time": 29.78761315345764,
+    "efficiency_ratio": 2.316399089934828,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

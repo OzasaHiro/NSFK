@@ -13,7 +13,7 @@ let isAnalyzing = false;
 const CONFIG = {
     CACHE_DURATION: 60 * 60 * 1000, // 1 hour
     MAX_CACHE_SIZE: 100,
-    API_ENDPOINT: 'https://5e45-107-194-242-26.ngrok-free.app/analyze',
+    API_ENDPOINT: 'http://127.0.0.1:8000/analyze',
     API_TIMEOUT: 240000, // 4 minutes
     RETRY_ATTEMPTS: 2,
     RETRY_DELAY: 5000 // 5 seconds between retries
@@ -218,8 +218,7 @@ async function performAnalysis(videoUrl) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ url: videoUrl }),
             signal: controller.signal
@@ -266,48 +265,48 @@ async function performAnalysis(videoUrl) {
 // Clean and standardize API response
 function cleanApiResponse(apiResult, processingTime) {
     console.log('📊 Cleaning API response');
-    
+
     // Direct mapping of API fields to our standard format
     const cleanedResponse = {
         // Core fields from API
         title: apiResult.title || 'Unknown Title',
         channel: apiResult.channel_name || 'Unknown Channel',
         duration: apiResult.duration || 0,
-        
+
         // Safety information
         safetyScore: apiResult.safety_score || 0,
         recommendation: apiResult.recommendation || 'No recommendation available',
-        
+
         // Content analysis
         summary: apiResult.summary || '',
         keywords: apiResult.keywords || [],
-        
+
         // Category scores - pass through as-is
         categories: apiResult.category_scores || {},
-        
+
         // Additional analysis fields
         commentAnalysis: apiResult.comment_analysis || '',
         webReputation: apiResult.web_reputation || '',
-        
+
         // Risk factors if they exist (but don't create if not present)
         riskFactors: apiResult.risk_factors || [],
-        
+
         // Metadata
         videoUrl: apiResult.video_url || '',
         analysisTimestamp: apiResult.analysis_timestamp || new Date().toISOString(),
         reportPath: apiResult.report_path || '',
-        
+
         // Audio transcript if available
         audioTranscript: apiResult.audio_transcript || '',
-        
+
         // Processing metadata
         processingTime: processingTime,
         apiEndpoint: CONFIG.API_ENDPOINT,
-        
+
         // Keep original response for debugging
         _originalResponse: apiResult
     };
-    
+
     console.log('✅ Cleaned response:', cleanedResponse);
     return cleanedResponse;
 }
@@ -323,8 +322,7 @@ async function testAPIConnection(sendResponse) {
         const response = await fetch(CONFIG.API_ENDPOINT, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ url: 'test' }),
             signal: controller.signal

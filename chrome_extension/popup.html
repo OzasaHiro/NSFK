@@ -13,8 +13,12 @@
         </div>
         
         <div id="loading" class="loading hidden">
-            <div class="spinner"></div>
-            <p>Analyzing video content...</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Initializing analysis...</div>
+            </div>
         </div>
         
         <div id="error" class="error hidden">

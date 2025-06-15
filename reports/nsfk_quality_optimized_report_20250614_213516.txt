@@ -1,0 +1,40 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: A World Without... Children
+Video URL: https://youtube.com/watch?v=Phu3cuPi474
+Analysis Date: 2025-06-14T21:35:16.611038
+Duration: 69 seconds
+
+Safety Score: 70/100
+Recommendation: Review Required
+
+Quality Metrics:
+- Frames Analyzed: 58
+- Visual Issues Found: 49
+- Analysis Time: 29.8s
+- Efficiency Ratio: 2.3x realtime
+
+Category Scores:
+- Violence: 0/20
+- Language: 0/15
+- Scary Content: 0/20
+- Sexual Content: 0/15
+- Substance Use: 0/10
+- Dangerous Behavior: 0/10
+- Educational Value: 5/10
+
+Summary: The video 'A World Without... Children' contains some mature themes and violent imagery, such as a 'Death Race' poster and a man holding a gun, which may not be suitable for all 10-year-olds. While it may spark interesting discussions, parental discretion is advised due to some potentially disturbing content. The video's educational value is limited, and its overall safety score is moderate.
+
+Keywords: complex themes, violence, weapons, mature topics
+
+Risk Factors:
+1. Frame 2: Gemini API error - 429
+2. Frame 4: Gemini API error - 429
+3. Frame 5: Inappropriate. The image depicts a woman giving birth, which is a complex topic.
+4. Frame 6: Gemini API error - 429
+5. Frame 8: Gemini API error - 429
+6. Frame 12: Gemini API error - 429
+7. Frame 13: Violence. "Death Race" poster and a man holding a gun could be concerning.
+8. Frame 14: Weapons: Poster depicts a gun.
+SAFE_FOR_KIDS
