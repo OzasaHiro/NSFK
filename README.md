@@ -1,16 +1,16 @@
 # NSFK? (Not Safe For Kids?)
-**AI-Powered YouTube Video Safety Analyzer for 10-Year-Olds**
+**AI-Powered YouTube Video Safety Analyzer for Children 10 and Below**
 
 *Weekend Agent Hack - Mountain View, June 14th, 2025*
 
 ## 🎯 Project Overview
 
-NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents determine if content is appropriate for 10-year-old children. The system provides quick safety assessments with detailed category-based scoring, comment analysis, and channel reputation evaluation.
+NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents determine if content is appropriate for children 10 and below. The system provides quick safety assessments with detailed category-based scoring, comment analysis, and channel reputation evaluation.
 
 ## ✨ Key Features
 
 - **🔍 Comprehensive Video Analysis** - Downloads and analyzes video content and visual elements
-- **👦 10-Year-Old Focused** - All analysis specifically tailored for 10-year-old appropriateness
+- **👦 Children 10 and Below Focused** - All analysis specifically tailored for children 10 and below appropriateness
 - **🎯 Safety Scoring System** - 0-100 point scale with positive category breakdowns:
   - Violence (20 pts max) - Absence of violence, weapons, fighting
   - Language (15 pts max) - Clean, family-friendly language
@@ -18,7 +18,7 @@ NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents det
   - Sexual Content (15 pts max) - No inappropriate themes
   - Substance Use (10 pts max) - No drugs, alcohol, smoking
   - Dangerous Behavior (10 pts max) - No risky activities kids might imitate
-  - Educational Value (10 pts max) - Positive learning content for 10-year-olds
+  - Educational Value (10 pts max) - Positive learning content for children 10 and below
 - **💬 Comment Analysis** - Analyzes YouTube comments for safety concerns and age-appropriateness
 - **🌐 Channel Reputation** - Evaluates channel/creator reputation for child safety
 - **🤖 Multi-Model AI Architecture** - Intelligent fallback system with rate limit optimization:
@@ -93,9 +93,9 @@ curl -X POST http://127.0.0.1:8000/analyze \
     "Safe Behavior": 10,
     "Educational Value": 1
   },
-  "summary": "Educational TED Talk appropriate for 10-year-olds with positive messaging about perseverance...",
+  "summary": "Educational TED Talk appropriate for children 10 and below with positive messaging about perseverance...",
   "keywords": ["Education", "Motivation", "Learning", "Perseverance", "TED"],
-  "comment_analysis": "Mixed sentiment with positive educational reactions. No safety concerns detected for 10-year-olds.",
+  "comment_analysis": "Mixed sentiment with positive educational reactions. No safety concerns detected for children 10 and below.",
   "channel_name": "TED",
   "web_reputation": "TED content is generally family-friendly, focusing on educational talks. Overall rating: Safe."
 }
@@ -245,7 +245,7 @@ The included Chrome extension provides seamless YouTube integration with enhance
 - **Enhanced GMI Integration** - Leverage Llama-4-Scout multimodal capabilities for image analysis
 - **Reddit/Wiki Integration** - Additional context from community discussions
 - **Batch Processing** - Analyze multiple videos simultaneously
-- **Custom Age Targeting** - Support for different age groups beyond 10-year-olds
+- **Custom Age Targeting** - Support for different age groups beyond children 10 and below
 - **Advanced Comment Filtering** - More sophisticated comment safety analysis
 - **Real-time Analysis** - Live analysis during video playback
 - **Chrome Extension Distribution** - Publish to Chrome Web Store

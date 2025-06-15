@@ -14,7 +14,7 @@ const CONFIG = {
     CACHE_DURATION: 60 * 60 * 1000, // 1 hour
     MAX_CACHE_SIZE: 100,
     API_ENDPOINT: 'http://127.0.0.1:8000/analyze',
-    API_TIMEOUT: 240000, // 4 minutes
+    API_TIMEOUT: 240000, // 4 minutes for full video analysis
     RETRY_ATTEMPTS: 2,
     RETRY_DELAY: 5000 // 5 seconds between retries
 };
@@ -203,17 +203,17 @@ async function performAnalysisWithRetry(videoUrl) {
 // Main analysis function
 async function performAnalysis(videoUrl) {
     console.log('nsfK? Starting analysis for:', videoUrl);
-    console.log('nsfK? Using API endpoint:', CONFIG.API_ENDPOINT);
-    
+    console.log('nsfK? Using local API endpoint:', CONFIG.API_ENDPOINT);
+
     const startTime = Date.now();
-    
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => {
             console.log('nsfK? Request timed out after', CONFIG.API_TIMEOUT, 'ms');
             controller.abort();
         }, CONFIG.API_TIMEOUT);
-        
+
         const response = await fetch(CONFIG.API_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -223,7 +223,7 @@ async function performAnalysis(videoUrl) {
             body: JSON.stringify({ url: videoUrl }),
             signal: controller.signal
         });
-        
+
         clearTimeout(timeoutId);
         
         const responseTime = Date.now() - startTime;
@@ -264,7 +264,7 @@ async function performAnalysis(videoUrl) {
 
 // Clean and standardize API response
 function cleanApiResponse(apiResult, processingTime) {
-    console.log('📊 Cleaning API response');
+    console.log('📊 Cleaning local API response');
 
     // Direct mapping of API fields to our standard format
     const cleanedResponse = {
@@ -314,11 +314,11 @@ function cleanApiResponse(apiResult, processingTime) {
 // Test API connection
 async function testAPIConnection(sendResponse) {
     try {
-        console.log('nsfK? Testing API connection...');
-        
+        console.log('nsfK? Testing local API connection...');
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
+
         const response = await fetch(CONFIG.API_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -327,16 +327,16 @@ async function testAPIConnection(sendResponse) {
             body: JSON.stringify({ url: 'test' }),
             signal: controller.signal
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         sendResponse({
             success: response.status < 500,
-            message: response.status < 500 ? 'API endpoint is responding' : 'API endpoint error',
+            message: response.status < 500 ? 'Local API endpoint is responding' : 'Local API endpoint error',
             endpoint: CONFIG.API_ENDPOINT,
             status: response.status
         });
-        
+
     } catch (error) {
         sendResponse({
             success: false,
@@ -430,5 +430,6 @@ setInterval(() => {
 }, 10 * 60 * 1000); // Clean every 10 minutes
 
 console.log('nsfK? Background script initialized');
-console.log('nsfK? API endpoint:', CONFIG.API_ENDPOINT);
+console.log('nsfK? Local API endpoint:', CONFIG.API_ENDPOINT);
 console.log('nsfK? Timeout:', CONFIG.API_TIMEOUT / 1000, 'seconds');
+console.log('nsfK? Using local deployment');

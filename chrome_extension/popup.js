@@ -106,8 +106,44 @@ function displayResults(response, analysisTime = null) {
             </div>`;
     }
 
-    html += `</div>
+    html += `</div>`;
 
+    // Add component scoring breakdown if available
+    if (data.dynamicScoring) {
+        const ds = data.dynamicScoring;
+        html += `
+            <div class="component-breakdown">
+                <h3>📊 Safety Analysis Breakdown</h3>
+                <div class="component-scores">
+                    <div class="component-item">
+                        <div class="component-header">
+                            <span class="component-icon">📹</span>
+                            <span class="component-label">Video Content</span>
+                            <span class="component-score">${ds.component_scores.video_content}/100</span>
+                        </div>
+                        <div class="component-weight">70% of final score</div>
+                    </div>
+                    <div class="component-item">
+                        <div class="component-header">
+                            <span class="component-icon">💬</span>
+                            <span class="component-label">Comments</span>
+                            <span class="component-score">${ds.component_scores.comments}/100</span>
+                        </div>
+                        <div class="component-weight">20% of final score</div>
+                    </div>
+                    <div class="component-item">
+                        <div class="component-header">
+                            <span class="component-icon">🌐</span>
+                            <span class="component-label">Web Reputation</span>
+                            <span class="component-score">${ds.component_scores.web_reputation}/100</span>
+                        </div>
+                        <div class="component-weight">10% of final score</div>
+                    </div>
+                </div>
+            </div>`;
+    }
+
+    html += `
         <div class="summary">
             <h3>Summary</h3>
             <p>${summary}</p>`;
@@ -172,6 +208,7 @@ function displayResults(response, analysisTime = null) {
     // Add analysis timing information
     if (analysisTime) {
         const formattedTime = formatAnalysisTime(analysisTime);
+
         html += `
             <div class="analysis-timing">
                 <div class="timing-info">
@@ -431,7 +468,66 @@ style.textContent = `
         font-weight: bold;
         color: #667eea;
     }
-    
+
+    .component-breakdown {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+
+    .component-breakdown h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+        font-size: 1.1em;
+    }
+
+    .component-scores {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .component-item {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+        border-left: 3px solid #667eea;
+    }
+
+    .component-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+
+    .component-icon {
+        font-size: 1.2em;
+        margin-right: 8px;
+    }
+
+    .component-label {
+        font-weight: 600;
+        color: #495057;
+        flex-grow: 1;
+    }
+
+    .component-score {
+        font-weight: bold;
+        color: #667eea;
+        font-size: 1.1em;
+    }
+
+    .component-weight {
+        font-size: 0.85em;
+        color: #6c757d;
+        font-style: italic;
+        margin-left: 28px;
+    }
+
     .summary {
         background: white;
         padding: 20px;

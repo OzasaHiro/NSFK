@@ -317,11 +317,11 @@ class QualityPreservingNSFKAnalyzer:
                                                  video_title: str) -> str:
         """Optimized frame analysis with GMI API and Gemini fallback"""
         
-        # Ultra-concise prompt for 10-year-old safety analysis
+        # Ultra-concise prompt for children 10 and below safety analysis
         prompt_text = (
-            f"Check frame for 10-year-old safety: violence, weapons, nudity, sexual content, "
+            f"Check frame for children 10 and below safety: violence, weapons, nudity, sexual content, "
             f"drugs/alcohol, scary imagery, dangerous acts, inappropriate text, content too advanced/complex. "
-            f"If safe for 10-year-olds, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
+            f"If safe for children 10 and below, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
         )
         
         # GMI Llama-4-Scout has timeout issues, skip directly to Gemini for vision analysis
@@ -386,9 +386,9 @@ class QualityPreservingNSFKAnalyzer:
         headers = {'Content-Type': 'application/json'}
         
         prompt_text = (
-            f"Check frame for 10-year-old safety: violence, weapons, nudity, sexual content, "
+            f"Check frame for children 10 and below safety: violence, weapons, nudity, sexual content, "
             f"drugs/alcohol, scary imagery, dangerous acts, inappropriate text, content too advanced/complex. "
-            f"If safe for 10-year-olds, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
+            f"If safe for children 10 and below, reply 'SAFE_FOR_KIDS'. If unsafe, give 1-2 word issue + brief reason (max 15 words)."
         )
         
         payload = {
@@ -503,11 +503,11 @@ class QualityPreservingNSFKAnalyzer:
         
         # Generate summary
         if total_score >= 80:
-            summary = "Content appears generally safe for 10-year-olds based on title analysis. No major risk indicators detected."
+            summary = "Content appears generally safe for children 10 and below based on title analysis. No major risk indicators detected."
         elif total_score >= 60:
-            summary = "Content may require parental review for 10-year-olds. Some potential concerns detected in title or content."
+            summary = "Content may require parental review for children 10 and below. Some potential concerns detected in title or content."
         else:
-            summary = "Content may not be suitable for 10-year-olds. Multiple risk indicators detected - parental guidance strongly recommended."
+            summary = "Content may not be suitable for children 10 and below. Multiple risk indicators detected - parental guidance strongly recommended."
         
         return {
             'category_scores': base_scores,
@@ -541,7 +541,7 @@ class QualityPreservingNSFKAnalyzer:
             combined_analysis += "No unsafe visual content detected.\n"
         
         prompt = (
-            "Provide comprehensive video safety analysis for 10-year-olds. Score each category based on SAFETY (higher = safer):\n\n"
+            "Provide comprehensive video safety analysis for children 10 and below. Score each category based on SAFETY (higher = safer):\n\n"
             "Categories (max points):\n"
             "- Non-Violence: 20 points (absence of physical violence, weapons, fighting)\n"
             "- Appropriate Language: 15 points (no profanity, clean language)\n"
@@ -549,13 +549,13 @@ class QualityPreservingNSFKAnalyzer:
             "- Family-Friendly Content: 15 points (no nudity, inappropriate themes)\n"
             "- Substance-Free: 10 points (no drugs, alcohol, smoking)\n"
             "- Safe Behavior: 10 points (no risky activities kids might imitate)\n"
-            "- Educational Value: 10 points (positive learning content for 10-year-olds)\n\n"
+            "- Educational Value: 10 points (positive learning content for children 10 and below)\n\n"
             "Response format (JSON only):\n"
             "{\n"
             '  "category_scores": {"Non-Violence": 0-20, "Appropriate Language": 0-15, ...},\n'
             '  "total_score": sum_of_all_scores,\n'
             '  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],\n'
-            '  "summary": "Detailed 2-3 sentence safety summary for parents of 10-year-olds"\n'
+            '  "summary": "Detailed 2-3 sentence safety summary for parents of children 10 and below"\n'
             "}\n\n"
             f"Video Analysis Data:\n{combined_analysis}"
         )
@@ -569,7 +569,7 @@ class QualityPreservingNSFKAnalyzer:
         gmi_payload = {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "messages": [
-                {"role": "system", "content": "You are an expert at analyzing video content for 10-year-old child safety. Always respond with valid JSON only."},
+                {"role": "system", "content": "You are an expert at analyzing video content for children 10 and below safety. Always respond with valid JSON only."},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 800,
@@ -680,46 +680,84 @@ class QualityPreservingNSFKAnalyzer:
             )
             
             # Analyze comments if available with additional delay
-            comment_analysis = ""
+            comment_analysis_result = {"analysis": "", "safety_score": 70, "concerns": []}
             if comments and not comment_error:
                 # Add small delay before comment analysis API call
                 await asyncio.sleep(3)
-                comment_analysis = await self.analyze_comments_with_gmi(comments, video_title)
+                comment_analysis_result = await self.analyze_comments_with_gmi(comments, video_title)
             elif comment_error:
-                comment_analysis = comment_error
+                comment_analysis_result = {
+                    "analysis": comment_error,
+                    "safety_score": 60,  # Lower score for error cases
+                    "concerns": ["ANALYSIS_ERROR"]
+                }
             else:
-                comment_analysis = "No comments found for analysis"
+                comment_analysis_result = {
+                    "analysis": "No comments found for analysis",
+                    "safety_score": 75,  # Neutral score when no comments
+                    "concerns": []
+                }
             
-            # Generate comprehensive report
+            # Generate comprehensive report (without final scoring - we'll do dynamic scoring)
             report_data = await self.generate_comprehensive_report(
                 video_title, audio_transcript, visual_safety_observations
             )
-            
-            total_score = report_data['total_score']
+
+            # Get video content score from comprehensive report
+            video_content_score = report_data['total_score']
+
+            # Extract web reputation analysis result
+            web_reputation_result = reputation_data.get("web_reputation", "Not analyzed")
+            if not isinstance(web_reputation_result, dict):
+                web_reputation_result = {
+                    "analysis": str(web_reputation_result),
+                    "safety_score": 70,
+                    "rating": "Unknown"
+                }
+
+            # Calculate dynamic safety score
+            dynamic_score_result = self.calculate_dynamic_safety_score(
+                video_content_score, comment_analysis_result, web_reputation_result
+            )
+
+            final_safety_score = dynamic_score_result['final_score']
+
+            # Debug output
+            print(f"🔍 Dynamic scoring debug:")
+            print(f"   Video content score: {video_content_score}")
+            print(f"   Comment analysis: {comment_analysis_result}")
+            print(f"   Web reputation: {web_reputation_result}")
+            print(f"   Dynamic score result: {dynamic_score_result}")
+
             total_time = time.time() - total_start_time
-            
             efficiency_ratio = video_duration / total_time if total_time > 0 else 0
-            
+
             print(f"\n📊 Quality-Optimized Analysis Complete!")
             print(f"Total Time: {total_time:.1f}s")
             print(f"Efficiency: {efficiency_ratio:.1f}x realtime")
             print(f"Frames Analyzed: {len(frames_base64)}")
             print(f"Issues Found: {len(visual_safety_observations)}")
-            
+            print(f"\n🎯 Final Safety Score: {final_safety_score}/100")
+            print(f"   📹 Video Content: {dynamic_score_result['component_scores']['video_content']}/100 (70% weight)")
+            print(f"   💬 Comments: {dynamic_score_result['component_scores']['comments']}/100 (20% weight)")
+            print(f"   🌐 Web Reputation: {dynamic_score_result['component_scores']['web_reputation']}/100 (10% weight)")
+
             return {
                 "video_url": f"https://youtube.com/watch?v={video_info.get('video_id', '')}",
                 "title": video_title,
                 "duration": video_duration,
-                "safety_score": total_score,
+                "safety_score": final_safety_score,
                 "category_scores": report_data['category_scores'],
                 "summary": report_data['summary'],
                 "risk_factors": visual_safety_observations[:8],  # More risk factors for quality
                 "keywords": report_data['keywords'],
-                "recommendation": "Safe" if total_score >= 80 else "Review Required" if total_score >= 60 else "Not Recommended",
+                "recommendation": "Safe" if final_safety_score >= 80 else "Review Required" if final_safety_score >= 60 else "Not Recommended",
                 "audio_transcript": audio_transcript[:800] + "..." if len(audio_transcript) > 800 else audio_transcript,
-                "comment_analysis": comment_analysis,
+                "comment_analysis": comment_analysis_result.get("analysis", ""),
                 "channel_name": reputation_data.get("channel_name", "Unknown"),
-                "web_reputation": reputation_data.get("web_reputation", "Not analyzed"),
+                "web_reputation": web_reputation_result.get("analysis", "Not analyzed"),
+                # New dynamic scoring fields
+                "dynamic_scoring": dynamic_score_result,
                 "analysis_timestamp": datetime.now().isoformat(),
                 "quality_metrics": {
                     "frames_analyzed": len(frames_base64),
@@ -822,22 +860,35 @@ class QualityPreservingNSFKAnalyzer:
             else:
                 return [], f"Error fetching comments: {error_msg[:100]}"
     
-    async def analyze_comments_with_gmi(self, comments: List[str], video_title: str) -> str:
-        """Analyze YouTube comments sentiment using GMI API"""
+    async def analyze_comments_with_gmi(self, comments: List[str], video_title: str) -> Dict[str, Any]:
+        """Analyze YouTube comments sentiment using GMI API with safety scoring"""
         if not comments:
-            return "No comments available for analysis"
-        
+            return {
+                "analysis": "No comments available for analysis",
+                "safety_score": 75,  # Neutral score when no comments
+                "concerns": []
+            }
+
         # Combine comments for analysis (limit to avoid token overload)
         comments_text = "\n---\n".join(comments[:10])  # Analyze max 10 comments
-        
-        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a 10-year-old child perspective:
+
+        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a children 10 and below perspective:
 
 {comments_text}
 
-Provide a BRIEF analysis (2-3 sentences max):
-1. Overall sentiment (positive/negative/mixed)
-2. Main concerns or praise related to safety for 10-year-olds
-3. Any red flags for parents of 10-year-olds (content difficulty, inappropriate topics)
+Provide analysis in JSON format:
+{{
+    "analysis": "Brief 2-3 sentence analysis of overall sentiment and main concerns",
+    "safety_score": 0-100,
+    "concerns": ["concern1", "concern2"]
+}}
+
+Score based on SAFETY for children 10 and below (higher = safer):
+- 90-100: Very positive, educational, family-friendly comments
+- 70-89: Generally positive with minor concerns
+- 50-69: Mixed sentiment, some concerning language/topics
+- 30-49: Negative sentiment, inappropriate language/topics
+- 0-29: Very concerning, explicit content, dangerous topics
 
 Keep response concise for quick processing."""
 
@@ -848,7 +899,7 @@ Keep response concise for quick processing."""
         payload = {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "messages": [
-                {"role": "system", "content": "You are an expert at analyzing social media comments for 10-year-old child safety and age-appropriate content."},
+                {"role": "system", "content": "You are an expert at analyzing social media comments for children 10 and below safety and age-appropriate content."},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 200,
@@ -869,13 +920,46 @@ Keep response concise for quick processing."""
                         # Try content first, then reasoning_content (for some GMI models)
                         content = message.get('content') or message.get('reasoning_content')
                         if content:
-                            return content.strip()
+                            try:
+                                # Try to parse JSON response
+                                import json
+                                json_match = re.search(r'\{.*\}', content.strip(), re.DOTALL)
+                                if json_match:
+                                    parsed = json.loads(json_match.group())
+                                    return {
+                                        "analysis": parsed.get('analysis', content.strip()),
+                                        "safety_score": parsed.get('safety_score', 70),
+                                        "concerns": parsed.get('concerns', [])
+                                    }
+                                else:
+                                    # Fallback to text analysis
+                                    return {
+                                        "analysis": content.strip(),
+                                        "safety_score": 70,  # Default neutral score
+                                        "concerns": []
+                                    }
+                            except:
+                                return {
+                                    "analysis": content.strip(),
+                                    "safety_score": 70,
+                                    "concerns": []
+                                }
                         else:
-                            return "GMI API returned empty content - comment analysis incomplete"
+                            return {
+                                "analysis": "GMI API returned empty content - comment analysis incomplete",
+                                "safety_score": 50,
+                                "concerns": ["API_ERROR"]
+                            }
                     elif response.status == 429:
-                        return "GMI API rate limit reached - comment analysis skipped"
+                        # Rate limit hit - fallback to Gemini API
+                        print("⚠️  GMI API rate limit hit - falling back to Gemini API for comments...")
+                        return await self.analyze_comments_with_gemini_fallback(comments, video_title)
                     else:
-                        return f"Comment analysis failed (GMI API status: {response.status})"
+                        return {
+                            "analysis": f"Comment analysis failed (GMI API status: {response.status})",
+                            "safety_score": 50,
+                            "concerns": ["API_ERROR"]
+                        }
         except asyncio.TimeoutError:
             # Fallback to Gemini API
             return await self.analyze_comments_with_gemini_fallback(comments, video_title)
@@ -929,15 +1013,26 @@ Keep response concise for quick processing."""
                 "web_reputation": f"Error analyzing reputation: {str(e)}"
             }
     
-    async def analyze_web_reputation_with_gmi(self, channel_name: str) -> str:
-        """Analyze channel reputation using GMI API"""
-            
-        prompt = f"""Evaluate YouTube channel "{channel_name}" for 10-year-olds. Respond in 1-2 sentences only:
-1. Age-appropriate? (Yes/No)
-2. Safety rating: Safe/Caution/Unknown
-3. Brief reason (if needed)
+    async def analyze_web_reputation_with_gmi(self, channel_name: str) -> Dict[str, Any]:
+        """Analyze channel reputation using GMI API with safety scoring"""
 
-Example: "Generally safe educational content for 10-year-olds. Rating: Safe." """
+        prompt = f"""Evaluate YouTube channel "{channel_name}" for children 10 and below.
+
+Provide analysis in JSON format:
+{{
+    "analysis": "Brief 1-2 sentence evaluation",
+    "safety_score": 0-100,
+    "rating": "Safe/Caution/Unknown"
+}}
+
+Score based on SAFETY for children 10 and below (higher = safer):
+- 90-100: Excellent educational content, verified kid-friendly
+- 70-89: Generally safe, appropriate content
+- 50-69: Mixed content, requires parental review
+- 30-49: Some concerning content, caution advised
+- 0-29: Not suitable for children, adult content
+
+Example: {{"analysis": "Educational content for children. Rating: Safe.", "safety_score": 85, "rating": "Safe"}}"""
 
         headers = {
             'Content-Type': 'application/json',
@@ -946,7 +1041,7 @@ Example: "Generally safe educational content for 10-year-olds. Rating: Safe." ""
         payload = {
             "model": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
             "messages": [
-                {"role": "system", "content": "You are an expert at evaluating YouTube channels for 10-year-old child safety and age-appropriate content difficulty."},
+                {"role": "system", "content": "You are an expert at evaluating YouTube channels for children 10 and below safety and age-appropriate content difficulty."},
                 {"role": "user", "content": prompt}
             ],
             "max_tokens": 150,
@@ -967,13 +1062,46 @@ Example: "Generally safe educational content for 10-year-olds. Rating: Safe." ""
                         # Try content first, then reasoning_content (for some GMI models)
                         content = message.get('content') or message.get('reasoning_content')
                         if content:
-                            return content.strip()
+                            try:
+                                # Try to parse JSON response
+                                import json
+                                json_match = re.search(r'\{.*\}', content.strip(), re.DOTALL)
+                                if json_match:
+                                    parsed = json.loads(json_match.group())
+                                    return {
+                                        "analysis": parsed.get('analysis', content.strip()),
+                                        "safety_score": parsed.get('safety_score', 70),
+                                        "rating": parsed.get('rating', 'Unknown')
+                                    }
+                                else:
+                                    # Fallback to text analysis
+                                    return {
+                                        "analysis": content.strip(),
+                                        "safety_score": 70,  # Default neutral score
+                                        "rating": "Unknown"
+                                    }
+                            except:
+                                return {
+                                    "analysis": content.strip(),
+                                    "safety_score": 70,
+                                    "rating": "Unknown"
+                                }
                         else:
-                            return "GMI API returned empty content - reputation analysis incomplete"
+                            return {
+                                "analysis": "GMI API returned empty content - reputation analysis incomplete",
+                                "safety_score": 50,
+                                "rating": "Unknown"
+                            }
                     elif response.status == 429:
-                        return "GMI API rate limit reached - reputation analysis skipped"
+                        # Rate limit hit - fallback to Gemini API
+                        print("⚠️  GMI API rate limit hit - falling back to Gemini API for reputation...")
+                        return await self.analyze_web_reputation_with_gemini_fallback(channel_name)
                     else:
-                        return f"Reputation analysis failed (GMI API status: {response.status})"
+                        return {
+                            "analysis": f"Reputation analysis failed (GMI API status: {response.status})",
+                            "safety_score": 50,
+                            "rating": "Unknown"
+                        }
         except asyncio.TimeoutError:
             # Fallback to Gemini API
             return await self.analyze_web_reputation_with_gemini_fallback(channel_name)
@@ -981,25 +1109,33 @@ Example: "Generally safe educational content for 10-year-olds. Rating: Safe." ""
             # Fallback to Gemini API
             return await self.analyze_web_reputation_with_gemini_fallback(channel_name)
 
-    async def analyze_comments_with_gemini_fallback(self, comments: List[str], video_title: str) -> str:
+    async def analyze_comments_with_gemini_fallback(self, comments: List[str], video_title: str) -> Dict[str, Any]:
         """Fallback comment analysis using Gemini 1.5 Flash (separate rate limits)"""
         if not GEMINI_API_KEY:
-            return "Comment analysis failed - no fallback API available"
+            return {
+                "analysis": "Comment analysis failed - no fallback API available",
+                "safety_score": 50,
+                "concerns": ["NO_API_KEY"]
+            }
 
         if not comments:
-            return "No comments available for analysis"
+            return {
+                "analysis": "No comments available for analysis",
+                "safety_score": 75,
+                "concerns": []
+            }
 
         # Combine comments for analysis (limit to avoid token overload)
         comments_text = "\n---\n".join(comments[:10])  # Analyze max 10 comments
 
-        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a 10-year-old child perspective:
+        prompt = f"""Analyze these YouTube comments for video "{video_title}" from a children 10 and below perspective:
 
 {comments_text}
 
 Provide a BRIEF analysis (2-3 sentences max):
 1. Overall sentiment (positive/negative/mixed)
-2. Main concerns or praise related to safety for 10-year-olds
-3. Any red flags for parents of 10-year-olds (content difficulty, inappropriate topics)
+2. Main concerns or praise related to safety for children 10 and below
+3. Any red flags for parents of children 10 and below (content difficulty, inappropriate topics)
 
 Keep response concise for quick processing."""
 
@@ -1034,27 +1170,51 @@ Keep response concise for quick processing."""
                             result['candidates'][0]['content'].get('parts')):
 
                             content = result['candidates'][0]['content']['parts'][0]['text'].strip()
-                            return content
+                            return {
+                                "analysis": content,
+                                "safety_score": 70,  # Default neutral score for fallback
+                                "concerns": []
+                            }
                         else:
-                            return "Gemini 1.5 Flash returned empty content - comment analysis incomplete"
+                            return {
+                                "analysis": "Gemini 1.5 Flash returned empty content - comment analysis incomplete",
+                                "safety_score": 50,
+                                "concerns": ["EMPTY_RESPONSE"]
+                            }
                     else:
-                        return f"Comment analysis failed (Gemini 1.5 Flash status: {response.status})"
+                        return {
+                            "analysis": f"Comment analysis failed (Gemini 1.5 Flash status: {response.status})",
+                            "safety_score": 50,
+                            "concerns": ["API_ERROR"]
+                        }
         except asyncio.TimeoutError:
-            return "Comment analysis timeout - all APIs failed"
+            return {
+                "analysis": "Comment analysis timeout - all APIs failed",
+                "safety_score": 50,
+                "concerns": ["TIMEOUT"]
+            }
         except Exception as e:
-            return f"Comment analysis error: {str(e)[:100]}"
+            return {
+                "analysis": f"Comment analysis error: {str(e)[:100]}",
+                "safety_score": 50,
+                "concerns": ["EXCEPTION"]
+            }
 
-    async def analyze_web_reputation_with_gemini_fallback(self, channel_name: str) -> str:
+    async def analyze_web_reputation_with_gemini_fallback(self, channel_name: str) -> Dict[str, Any]:
         """Fallback web reputation analysis using Gemini 1.5 Flash (separate rate limits)"""
         if not GEMINI_API_KEY:
-            return "Reputation analysis failed - no fallback API available"
+            return {
+                "analysis": "Reputation analysis failed - no fallback API available",
+                "safety_score": 50,
+                "rating": "Unknown"
+            }
 
-        prompt = f"""Evaluate YouTube channel "{channel_name}" for 10-year-olds. Respond in 1-2 sentences only:
+        prompt = f"""Evaluate YouTube channel "{channel_name}" for children 10 and below. Respond in 1-2 sentences only:
 1. Age-appropriate? (Yes/No)
 2. Safety rating: Safe/Caution/Unknown
 3. Brief reason (if needed)
 
-Example: "Generally safe educational content for 10-year-olds. Rating: Safe." """
+Example: "Generally safe educational content for children 10 and below. Rating: Safe." """
 
         payload = {
             "contents": [{
@@ -1087,15 +1247,108 @@ Example: "Generally safe educational content for 10-year-olds. Rating: Safe." ""
                             result['candidates'][0]['content'].get('parts')):
 
                             content = result['candidates'][0]['content']['parts'][0]['text'].strip()
-                            return content
+                            return {
+                                "analysis": content,
+                                "safety_score": 70,  # Default neutral score for fallback
+                                "rating": "Unknown"
+                            }
                         else:
-                            return "Gemini 1.5 Flash returned empty content - reputation analysis incomplete"
+                            return {
+                                "analysis": "Gemini 1.5 Flash returned empty content - reputation analysis incomplete",
+                                "safety_score": 50,
+                                "rating": "Unknown"
+                            }
                     else:
-                        return f"Reputation analysis failed (Gemini 1.5 Flash status: {response.status})"
+                        return {
+                            "analysis": f"Reputation analysis failed (Gemini 1.5 Flash status: {response.status})",
+                            "safety_score": 50,
+                            "rating": "Unknown"
+                        }
         except asyncio.TimeoutError:
-            return "Reputation analysis timeout - all APIs failed"
+            return {
+                "analysis": "Reputation analysis timeout - all APIs failed",
+                "safety_score": 50,
+                "rating": "Unknown"
+            }
         except Exception as e:
-            return f"Reputation analysis error: {str(e)[:100]}"
+            return {
+                "analysis": f"Reputation analysis error: {str(e)[:100]}",
+                "safety_score": 50,
+                "rating": "Unknown"
+            }
+
+    def calculate_dynamic_safety_score(self, video_content_score: int,
+                                     comment_analysis: Dict[str, Any],
+                                     web_reputation: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate dynamic safety score combining multiple analysis components
+
+        Args:
+            video_content_score: Score from video content analysis (0-100)
+            comment_analysis: Dict with analysis, safety_score, concerns
+            web_reputation: Dict with analysis, safety_score, rating
+
+        Returns:
+            Dict with final_score, component_scores, and explanation
+        """
+
+        # Extract component scores
+        content_score = video_content_score
+        comment_score = comment_analysis.get('safety_score', 70) if isinstance(comment_analysis, dict) else 70
+        reputation_score = web_reputation.get('safety_score', 70) if isinstance(web_reputation, dict) else 70
+
+        # Define weights for each component (optimized for child safety)
+        weights = {
+            'video_content': 0.70,   # 70% - Most important (actual video content analysis)
+            'comments': 0.20,        # 20% - Community feedback and parent concerns
+            'web_reputation': 0.10   # 10% - Channel reputation and history
+        }
+
+        # Calculate weighted average
+        final_score = (
+            content_score * weights['video_content'] +
+            comment_score * weights['comments'] +
+            reputation_score * weights['web_reputation']
+        )
+
+        # Round to integer
+        final_score = round(final_score)
+
+        # Ensure score is within bounds
+        final_score = max(0, min(100, final_score))
+
+        # Determine if any component significantly lowers the score
+        score_adjustments = []
+        if comment_score < 40:
+            final_score = min(final_score, 60)  # Cap at 60 if comments are very concerning
+            score_adjustments.append("Comments indicate significant safety concerns")
+
+        if reputation_score < 30:
+            final_score = min(final_score, 50)  # Cap at 50 if channel has poor reputation
+            score_adjustments.append("Channel reputation raises safety concerns")
+
+        if content_score < 30:
+            final_score = min(final_score, 40)  # Cap at 40 if video content is very concerning
+            score_adjustments.append("Video content contains significant safety issues")
+
+        # Generate explanation
+        component_breakdown = f"Video Content: {content_score}/100, Comments: {comment_score}/100, Channel: {reputation_score}/100"
+
+        explanation_parts = [f"Combined analysis: {component_breakdown}"]
+        if score_adjustments:
+            explanation_parts.extend(score_adjustments)
+
+        return {
+            'final_score': final_score,
+            'component_scores': {
+                'video_content': content_score,
+                'comments': comment_score,
+                'web_reputation': reputation_score
+            },
+            'weights_used': weights,
+            'explanation': ". ".join(explanation_parts),
+            'adjustments_applied': score_adjustments
+        }
 
     def save_report(self, analysis_result: Dict[str, Any]) -> str:
         """Save comprehensive analysis report"""

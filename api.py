@@ -7,7 +7,7 @@ Provides REST API endpoints for YouTube video safety analysis
 import os
 import logging
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, status
@@ -90,6 +90,14 @@ class CategoryScores(BaseModel):
     DangerousBehavior: Optional[int] = 0
     EducationalValue: Optional[int] = 0
 
+class DynamicScoring(BaseModel):
+    """Dynamic scoring breakdown model"""
+    final_score: int
+    component_scores: Dict[str, int]
+    weights_used: Dict[str, float]
+    explanation: str
+    adjustments_applied: List[str]
+
 class AnalyzeResponse(BaseModel):
     """Response model for video analysis"""
     video_url: str
@@ -105,6 +113,7 @@ class AnalyzeResponse(BaseModel):
     comment_analysis: Optional[str] = None
     channel_name: Optional[str] = None
     web_reputation: Optional[str] = None
+    dynamic_scoring: Optional[DynamicScoring] = None
     analysis_timestamp: str
     report_path: Optional[str] = None
 
