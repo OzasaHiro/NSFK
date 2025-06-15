@@ -1,0 +1,39 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: Baywatch (2017) - Official Trailer - Paramount Pictures
+Video URL: https://youtube.com/watch?v=eyKOgnaf0BU
+Analysis Date: 2025-06-15T10:14:48.819240
+Duration: 157 seconds
+
+Safety Score: 45/100
+Recommendation: Not Recommended
+
+Quality Metrics:
+- Frames Analyzed: 261
+- Visual Issues Found: 252
+- Analysis Time: 33.0s
+- Efficiency Ratio: 4.8x realtime
+
+Category Scores:
+- Non-Violence: 8/10
+- Appropriate Language: 10/10
+- Non-Scary Content: 9/10
+- Family-Friendly Content: 2/10
+- Substance-Free: 10/10
+- Safe Behavior: 6/10
+- Educational Value: 1/10
+
+Summary: The 'Baywatch (2017)' trailer contains some mature content, including shirtless men and women in swimsuits, making it unsuitable for young children. While there's no explicit violence or scary content, the overall theme and imagery may not be family-friendly for kids 10 and below. Parents should exercise discretion.
+
+Keywords: Baywatch, swimsuit, mature content, action, beach
+
+Risk Factors:
+1. Frame 1: Gemini API error - 429
+2. Frame 2: Nudity: Man is shirtless.
+3. Frame 3: Gemini API error - 429
+4. Frame 4: Gemini API error - 429
+5. Frame 5: Inappropriate: Woman in swimsuit may be too mature.
+6. Frame 6: Inappropriate: Woman in swimsuit may be too mature.
+7. Frame 8: Gemini API error - 429
+8. Frame 14: Gemini API error - 429

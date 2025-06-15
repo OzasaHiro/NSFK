@@ -99,10 +99,11 @@ function displayResults(response, analysisTime = null) {
 
     // Add categories
     for (const [name, score] of Object.entries(categories)) {
+        const scoreClass = score < 5 ? 'category-score low-score' : 'category-score';
         html += `
             <div class="category">
                 <div class="category-name">${name}</div>
-                <div class="category-score">${score}/${getCategoryMax(name)}</div>
+                <div class="${scoreClass}">${score}/${getCategoryMax(name)}</div>
             </div>`;
     }
 
@@ -467,6 +468,10 @@ style.textContent = `
         font-size: 1.1em;
         font-weight: bold;
         color: #667eea;
+    }
+
+    .category-score.low-score {
+        color: #dc3545;
     }
 
     .component-breakdown {

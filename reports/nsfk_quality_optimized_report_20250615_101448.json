@@ -1,0 +1,72 @@
+{
+  "video_url": "https://youtube.com/watch?v=eyKOgnaf0BU",
+  "title": "Baywatch (2017) - Official Trailer - Paramount Pictures",
+  "duration": 157,
+  "safety_score": 45,
+  "category_scores": {
+    "Non-Violence": 8,
+    "Appropriate Language": 10,
+    "Non-Scary Content": 9,
+    "Family-Friendly Content": 2,
+    "Substance-Free": 10,
+    "Safe Behavior": 6,
+    "Educational Value": 1
+  },
+  "summary": "The 'Baywatch (2017)' trailer contains some mature content, including shirtless men and women in swimsuits, making it unsuitable for young children. While there's no explicit violence or scary content, the overall theme and imagery may not be family-friendly for kids 10 and below. Parents should exercise discretion.",
+  "risk_factors": [
+    "Frame 1: Gemini API error - 429",
+    "Frame 2: Nudity: Man is shirtless.",
+    "Frame 3: Gemini API error - 429",
+    "Frame 4: Gemini API error - 429",
+    "Frame 5: Inappropriate: Woman in swimsuit may be too mature.",
+    "Frame 6: Inappropriate: Woman in swimsuit may be too mature.",
+    "Frame 8: Gemini API error - 429",
+    "Frame 14: Gemini API error - 429"
+  ],
+  "keywords": [
+    "Baywatch",
+    "swimsuit",
+    "mature content",
+    "action",
+    "beach"
+  ],
+  "recommendation": "Not Recommended",
+  "audio_transcript": "",
+  "comment_analysis": "The comments are mixed with some being irrelevant or nonsensical, while others contain concerning language or topics. Some comments appear to be spam or contain mature themes. Overall, the comments are not suitable for children 10 and below.",
+  "channel_name": "Paramount Pictures",
+  "web_reputation": "To evaluate the YouTube channel \"Paramount Pictures\" for children 10 and below, we need to consider the type of content they typically publish and its suitability for young audiences.\n\nParamount Pictures is a major film studio that produces a wide range of movies, including some that are suitable for children and others that are geared towards adults. Their YouTube channel likely features trailers, clips, and behind-the-scenes content from their films.\n\nUpon reviewing the channel, we can observe that it hosts a variety of content, including promotional materials for movies that may not be suitable for children due to mature themes, violence, or other elements. However, it also includes content related to family-friendly movies.\n\nGiven the mixed nature of the content and the lack of specific",
+  "dynamic_scoring": {
+    "final_score": 45,
+    "component_scores": {
+      "video_content": 46,
+      "category_analysis": 66,
+      "comments": 40,
+      "web_reputation": 70
+    },
+    "weights_used": {
+      "video_content": 0.4,
+      "category_analysis": 0.3,
+      "comments": 0.2,
+      "web_reputation": 0.1
+    },
+    "explanation": "Combined analysis: Video Content: 46/100, Category Analysis: 66/100, Comments: 40/100, Channel: 70/100. Critical safety concern in Family-Friendly Content",
+    "adjustments_applied": [
+      "Critical safety concern in Family-Friendly Content"
+    ]
+  },
+  "analysis_timestamp": "2025-06-15T10:14:48.819240",
+  "quality_metrics": {
+    "frames_analyzed": 261,
+    "visual_issues_found": 252,
+    "audio_length_chars": 0,
+    "analysis_time": 32.97395610809326,
+    "efficiency_ratio": 4.76133344404693,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}
