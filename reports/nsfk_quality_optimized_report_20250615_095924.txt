@@ -1,0 +1,39 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)
+Video URL: https://youtube.com/watch?v=dQw4w9WgXcQ
+Analysis Date: 2025-06-15T09:59:24.379880
+Duration: 213 seconds
+
+Safety Score: 65/100
+Recommendation: Review Required
+
+Quality Metrics:
+- Frames Analyzed: 117
+- Visual Issues Found: 105
+- Analysis Time: 27.4s
+- Efficiency Ratio: 7.8x realtime
+
+Category Scores:
+- Non-Violence: 10/10
+- Appropriate Language: 8/10
+- Non-Scary Content: 10/10
+- Family-Friendly Content: 6/10
+- Substance-Free: 10/10
+- Safe Behavior: 10/10
+- Educational Value: 2/10
+
+Summary: The video is generally safe for children 10 and below, with some minor concerns regarding brief suggestive clothing. The content is non-violent and not scary, but may not be highly educational for young children.
+
+Keywords: music, 80s, classic, Rick Astley, remastered
+
+Risk Factors:
+1. Frame 5: Gemini API error - 429
+2. Frame 6: Inappropriate: Woman's clothing is revealing.
+3. Frame 8: Gemini API error - 429
+4. Frame 9: Gemini API error - 429
+5. Frame 10: Gemini API error - 429
+6. Frame 11: Gemini API error - 429
+7. Frame 12: Gemini API error - 429
+8. Frame 15: Gemini API error - 429

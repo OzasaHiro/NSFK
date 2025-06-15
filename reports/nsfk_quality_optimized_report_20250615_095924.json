@@ -1,0 +1,68 @@
+{
+  "video_url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+  "title": "Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)",
+  "duration": 213,
+  "safety_score": 65,
+  "category_scores": {
+    "Non-Violence": 10,
+    "Appropriate Language": 8,
+    "Non-Scary Content": 10,
+    "Family-Friendly Content": 6,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 2
+  },
+  "summary": "The video is generally safe for children 10 and below, with some minor concerns regarding brief suggestive clothing. The content is non-violent and not scary, but may not be highly educational for young children.",
+  "risk_factors": [
+    "Frame 5: Gemini API error - 429",
+    "Frame 6: Inappropriate: Woman's clothing is revealing.",
+    "Frame 8: Gemini API error - 429",
+    "Frame 9: Gemini API error - 429",
+    "Frame 10: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 12: Gemini API error - 429",
+    "Frame 15: Gemini API error - 429"
+  ],
+  "keywords": [
+    "music",
+    "80s",
+    "classic",
+    "Rick Astley",
+    "remastered"
+  ],
+  "recommendation": "Review Required",
+  "audio_transcript": "",
+  "comment_analysis": "The overall sentiment is generally positive and lighthearted, with users referencing the 'Rickroll' meme and expressing their enjoyment of the song. There are no apparent safety concerns for children 10 and below. The comments are mostly innocuous and family-friendly.",
+  "channel_name": "Rick Astley",
+  "web_reputation": "To evaluate the YouTube channel \"Rick Astley\" for children 10 and below, let's consider the content and safety aspects.\n\nRick Astley is a musician known for his hit song \"Never Gonna Give You Up.\" His YouTube channel primarily features his music videos, live performances, and some behind-the-scenes content. The content is generally music-oriented and does not contain explicit or mature themes that are typically considered unsafe for children.\n\nHowever, the channel is not specifically designed for young children, and some content, such as live performances or music videos, might not be directly educational or kid-friendly in the traditional sense (e.g., cartoons, nursery rhymes). Nonetheless, Rick Astley's music is generally considered family-friendly.\n\nGiven these considerations",
+  "dynamic_scoring": {
+    "final_score": 65,
+    "component_scores": {
+      "video_content": 56,
+      "comments": 95,
+      "web_reputation": 70
+    },
+    "weights_used": {
+      "video_content": 0.7,
+      "comments": 0.2,
+      "web_reputation": 0.1
+    },
+    "explanation": "Combined analysis: Video Content: 56/100, Comments: 95/100, Channel: 70/100",
+    "adjustments_applied": []
+  },
+  "analysis_timestamp": "2025-06-15T09:59:24.379880",
+  "quality_metrics": {
+    "frames_analyzed": 117,
+    "visual_issues_found": 105,
+    "audio_length_chars": 0,
+    "analysis_time": 27.350335121154785,
+    "efficiency_ratio": 7.787838761626359,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

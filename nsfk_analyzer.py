@@ -311,11 +311,11 @@ class NSFKAnalyzer:
         prompt = (
             "Based on the following video analysis, provide a detailed safety assessment with category scores.\n"
             "Each category should be scored based on how SAFE the content is (higher score = safer):\n\n"
-            "Categories with max points:\n"
-            "- Violence: 20 points max (physical violence, fighting, weapons)\n"
-            "- Language: 15 points max (profanity, inappropriate language)\n"
-            "- Scary Content: 20 points max (horror elements, jump scares, frightening imagery)\n"
-            "- Sexual Content: 15 points max (nudity, suggestive themes)\n"
+            "Categories (all out of 10 points):\n"
+            "- Violence: 10 points max (physical violence, fighting, weapons)\n"
+            "- Language: 10 points max (profanity, inappropriate language)\n"
+            "- Scary Content: 10 points max (horror elements, jump scares, frightening imagery)\n"
+            "- Sexual Content: 10 points max (nudity, suggestive themes)\n"
             "- Substance Use: 10 points max (drugs, alcohol, smoking)\n"
             "- Dangerous Behavior: 10 points max (risky activities kids might imitate)\n"
             "- Educational Value: 10 points max (positive learning content)\n\n"
@@ -450,10 +450,10 @@ class NSFKAnalyzer:
             f.write(f"Category Scores:\n")
             category_scores = analysis_result.get('category_scores', {})
             if category_scores:
-                f.write(f"- Violence: {category_scores.get('Violence', 0)}/20\n")
-                f.write(f"- Language: {category_scores.get('Language', 0)}/15\n")
-                f.write(f"- Scary Content: {category_scores.get('Scary Content', 0)}/20\n")
-                f.write(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/15\n")
+                f.write(f"- Violence: {category_scores.get('Violence', 0)}/10\n")
+                f.write(f"- Language: {category_scores.get('Language', 0)}/10\n")
+                f.write(f"- Scary Content: {category_scores.get('Scary Content', 0)}/10\n")
+                f.write(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/10\n")
                 f.write(f"- Substance Use: {category_scores.get('Substance Use', 0)}/10\n")
                 f.write(f"- Dangerous Behavior: {category_scores.get('Dangerous Behavior', 0)}/10\n")
                 f.write(f"- Educational Value: {category_scores.get('Educational Value', 0)}/10\n\n")
@@ -497,10 +497,10 @@ async def main():
         print(f"\nCategory Scores:")
         category_scores = result.get('category_scores', {})
         if category_scores:
-            print(f"- Violence: {category_scores.get('Violence', 0)}/20")
-            print(f"- Language: {category_scores.get('Language', 0)}/15")
-            print(f"- Scary Content: {category_scores.get('Scary Content', 0)}/20")
-            print(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/15")
+            print(f"- Violence: {category_scores.get('Violence', 0)}/10")
+            print(f"- Language: {category_scores.get('Language', 0)}/10")
+            print(f"- Scary Content: {category_scores.get('Scary Content', 0)}/10")
+            print(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/10")
             print(f"- Substance Use: {category_scores.get('Substance Use', 0)}/10")
             print(f"- Dangerous Behavior: {category_scores.get('Dangerous Behavior', 0)}/10")
             print(f"- Educational Value: {category_scores.get('Educational Value', 0)}/10")

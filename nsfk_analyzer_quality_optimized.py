@@ -454,12 +454,12 @@ class QualityPreservingNSFKAnalyzer:
         # Analyze title for keywords
         title_lower = video_title.lower()
         
-        # Default scores (moderately safe)
+        # Default scores (moderately safe) - All out of 10
         base_scores = {
-            'Non-Violence': 16,
-            'Appropriate Language': 12,
-            'Non-Scary Content': 16,
-            'Family-Friendly Content': 12,
+            'Non-Violence': 8,
+            'Appropriate Language': 8,
+            'Non-Scary Content': 8,
+            'Family-Friendly Content': 8,
             'Substance-Free': 8,
             'Safe Behavior': 8,
             'Educational Value': 6
@@ -480,15 +480,15 @@ class QualityPreservingNSFKAnalyzer:
                 if keyword in title_lower:
                     detected_issues.append(category)
                     if category == "violence":
-                        base_scores['Non-Violence'] = max(5, base_scores['Non-Violence'] - 8)
+                        base_scores['Non-Violence'] = max(2, base_scores['Non-Violence'] - 4)
                     elif category == "scary":
-                        base_scores['Non-Scary Content'] = max(5, base_scores['Non-Scary Content'] - 8)
+                        base_scores['Non-Scary Content'] = max(2, base_scores['Non-Scary Content'] - 4)
                     elif category == "inappropriate":
-                        base_scores['Family-Friendly Content'] = max(3, base_scores['Family-Friendly Content'] - 7)
+                        base_scores['Family-Friendly Content'] = max(1, base_scores['Family-Friendly Content'] - 4)
                     elif category == "substance":
-                        base_scores['Substance-Free'] = max(2, base_scores['Substance-Free'] - 5)
+                        base_scores['Substance-Free'] = max(1, base_scores['Substance-Free'] - 3)
                     elif category == "dangerous":
-                        base_scores['Safe Behavior'] = max(3, base_scores['Safe Behavior'] - 5)
+                        base_scores['Safe Behavior'] = max(1, base_scores['Safe Behavior'] - 3)
         
         # Adjust based on visual observations
         if visual_observations:
@@ -501,10 +501,10 @@ class QualityPreservingNSFKAnalyzer:
         keywords = ["fallback", "analysis"]
         keywords.extend(detected_issues[:3])
         
-        # Generate summary
-        if total_score >= 80:
+        # Generate summary (adjusted for new 70-point total scale)
+        if total_score >= 56:  # 80% of 70 points
             summary = "Content appears generally safe for children 10 and below based on title analysis. No major risk indicators detected."
-        elif total_score >= 60:
+        elif total_score >= 42:  # 60% of 70 points
             summary = "Content may require parental review for children 10 and below. Some potential concerns detected in title or content."
         else:
             summary = "Content may not be suitable for children 10 and below. Multiple risk indicators detected - parental guidance strongly recommended."
@@ -542,17 +542,17 @@ class QualityPreservingNSFKAnalyzer:
         
         prompt = (
             "Provide comprehensive video safety analysis for children 10 and below. Score each category based on SAFETY (higher = safer):\n\n"
-            "Categories (max points):\n"
-            "- Non-Violence: 20 points (absence of physical violence, weapons, fighting)\n"
-            "- Appropriate Language: 15 points (no profanity, clean language)\n"
-            "- Non-Scary Content: 20 points (no horror, jump scares, or frightening imagery)\n"
-            "- Family-Friendly Content: 15 points (no nudity, inappropriate themes)\n"
+            "Categories (all out of 10 points):\n"
+            "- Non-Violence: 10 points (absence of physical violence, weapons, fighting)\n"
+            "- Appropriate Language: 10 points (no profanity, clean language)\n"
+            "- Non-Scary Content: 10 points (no horror, jump scares, or frightening imagery)\n"
+            "- Family-Friendly Content: 10 points (no nudity, inappropriate themes)\n"
             "- Substance-Free: 10 points (no drugs, alcohol, smoking)\n"
             "- Safe Behavior: 10 points (no risky activities kids might imitate)\n"
             "- Educational Value: 10 points (positive learning content for children 10 and below)\n\n"
             "Response format (JSON only):\n"
             "{\n"
-            '  "category_scores": {"Non-Violence": 0-20, "Appropriate Language": 0-15, ...},\n'
+            '  "category_scores": {"Non-Violence": 0-10, "Appropriate Language": 0-10, ...},\n'
             '  "total_score": sum_of_all_scores,\n'
             '  "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],\n'
             '  "summary": "Detailed 2-3 sentence safety summary for parents of children 10 and below"\n'
@@ -1387,12 +1387,12 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             f.write(f"Category Scores:\n")
             category_scores = analysis_result.get('category_scores', {})
             if category_scores:
-                f.write(f"- Violence: {category_scores.get('Violence', 0)}/20\n")
-                f.write(f"- Language: {category_scores.get('Language', 0)}/15\n")
-                f.write(f"- Scary Content: {category_scores.get('Scary Content', 0)}/20\n")
-                f.write(f"- Sexual Content: {category_scores.get('Sexual Content', 0)}/15\n")
-                f.write(f"- Substance Use: {category_scores.get('Substance Use', 0)}/10\n")
-                f.write(f"- Dangerous Behavior: {category_scores.get('Dangerous Behavior', 0)}/10\n")
+                f.write(f"- Non-Violence: {category_scores.get('Non-Violence', 0)}/10\n")
+                f.write(f"- Appropriate Language: {category_scores.get('Appropriate Language', 0)}/10\n")
+                f.write(f"- Non-Scary Content: {category_scores.get('Non-Scary Content', 0)}/10\n")
+                f.write(f"- Family-Friendly Content: {category_scores.get('Family-Friendly Content', 0)}/10\n")
+                f.write(f"- Substance-Free: {category_scores.get('Substance-Free', 0)}/10\n")
+                f.write(f"- Safe Behavior: {category_scores.get('Safe Behavior', 0)}/10\n")
                 f.write(f"- Educational Value: {category_scores.get('Educational Value', 0)}/10\n\n")
             
             f.write(f"Summary: {analysis_result.get('summary', 'No summary available')}\n\n")

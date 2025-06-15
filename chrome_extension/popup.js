@@ -318,24 +318,24 @@ function formatBulletPoints(text) {
 
 function getCategoryMax(name) {
     const maxScores = {
-        // API returns these category names
-        'Violence': 20,
-        'Language': 15,
-        'ScaryContent': 20,
-        'Scary Content': 20,
-        'SexualContent': 15,
-        'Sexual Content': 15,
+        // API returns these category names - All out of 10
+        'Violence': 10,
+        'Language': 10,
+        'ScaryContent': 10,
+        'Scary Content': 10,
+        'SexualContent': 10,
+        'Sexual Content': 10,
         'SubstanceUse': 10,
         'Substance Use': 10,
         'DangerousBehavior': 10,
         'Dangerous Behavior': 10,
         'EducationalValue': 10,
         'Educational Value': 10,
-        // Legacy names for backward compatibility
-        'Non-Violence': 20,
-        'Appropriate Language': 15,
-        'Non-Scary Content': 20,
-        'Family-Friendly Content': 15,
+        // Legacy names for backward compatibility - All out of 10
+        'Non-Violence': 10,
+        'Appropriate Language': 10,
+        'Non-Scary Content': 10,
+        'Family-Friendly Content': 10,
         'Substance-Free': 10,
         'Safe Behavior': 10
     };
