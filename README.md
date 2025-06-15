@@ -21,7 +21,7 @@ NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents det
   - Educational Value (10 pts max) - Positive learning content for 10-year-olds
 - **💬 Comment Analysis** - Analyzes YouTube comments for safety concerns and age-appropriateness
 - **🌐 Channel Reputation** - Evaluates channel/creator reputation for child safety
-- **🤖 Dual AI Architecture** - Uses Gemini 2.0 Flash for frame analysis + OpenAI GPT-4o-mini for comments/reputation
+- **🤖 Advanced AI Architecture** - Primary: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API + Gemini/OpenAI fallbacks
 - **📊 Category-Based Scoring** - Detailed breakdown with intuitive positive scoring
 - **💡 Smart Recommendations** - Safe/Review Required/Not Recommended guidance
 - **🔗 REST API** - FastAPI-based web service for easy integration
@@ -43,7 +43,8 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Set up API keys
-echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
+echo "GMI_API_KEY=your_gmi_api_key_here" > .env
+echo "GEMINI_API_KEY=your_gemini_api_key_here" >> .env
 echo "OPENAI_API_KEY=your_openai_api_key_here" >> .env
 echo "YOUTUBE_API_KEY=your_youtube_api_key_here" >> .env
 ```
@@ -109,14 +110,28 @@ NSFK/
 ## 🔧 Tech Stack
 
 - **AI/ML**: 
-  - Google Gemini 2.0 Flash for video frame analysis
-  - OpenAI GPT-4o-mini for comment and reputation analysis
+  - **Primary**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API (1M token context, FP8 optimization)
+  - **Fallback**: Google Gemini 2.0 Flash for video frame analysis
+  - **Secondary**: OpenAI GPT-4o-mini for specialized analysis
 - **Video Processing**: yt-dlp, OpenCV, PySceneDetect
 - **Audio Analysis**: Whisper for transcription (currently disabled for speed)
 - **YouTube Integration**: YouTube Data API v3 for comments and channel data
 - **API Framework**: FastAPI with async support
 - **Frontend**: Enhanced HTML/CSS/JavaScript with additional analysis sections
 - **Deployment**: Docker support included
+
+## 🧠 AI Model Details
+
+### Primary Model: Llama-4-Maverick-17B-128E-Instruct-FP8
+- **Provider**: GMI API (https://api.gmi-serving.com)
+- **Context Window**: 1,048,576 tokens (1M tokens)
+- **Optimization**: FP8 quantization for faster inference
+- **Use Cases**: Comprehensive safety report generation, comment analysis, channel reputation assessment
+- **Advantages**: Large context window, cost-effective, specialized for instruction-following
+
+### Fallback Models
+- **Gemini 2.0 Flash**: Image analysis (when multimodal GMI models timeout)
+- **OpenAI GPT-4o-mini**: Secondary option for comment/reputation analysis
 
 ## 📖 Documentation
 
@@ -136,6 +151,7 @@ NSFK/
 
 - **Chrome Extension** - Browser integration for YouTube pages
 - **Audio Transcription Re-enabling** - Restore Whisper-based audio analysis
+- **Enhanced GMI Integration** - Leverage Llama-4-Scout multimodal capabilities for image analysis
 - **Reddit/Wiki Integration** - Additional context from community discussions
 - **Batch Processing** - Analyze multiple videos simultaneously
 - **Custom Age Targeting** - Support for different age groups beyond 10-year-olds
