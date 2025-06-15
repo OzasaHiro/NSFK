@@ -209,12 +209,21 @@ function displayResults(response, analysisTime = null) {
     // Add analysis timing information
     if (analysisTime) {
         const formattedTime = formatAnalysisTime(analysisTime);
+        const sourceText = response.source === 'cache' ? ' (from cache)' : '';
 
         html += `
             <div class="analysis-timing">
                 <div class="timing-info">
                     <span class="timing-icon">⏱️</span>
-                    <span class="timing-text">Analysis completed in ${formattedTime}</span>
+                    <span class="timing-text">Analysis completed in ${formattedTime}${sourceText}</span>
+                </div>
+            </div>`;
+    } else if (response.source === 'cache') {
+        html += `
+            <div class="analysis-timing">
+                <div class="timing-info">
+                    <span class="timing-icon">💾</span>
+                    <span class="timing-text">Results loaded from cache</span>
                 </div>
             </div>`;
     }
@@ -397,6 +406,30 @@ function retry() {
 function openYouTube() {
     chrome.tabs.create({ url: 'https://www.youtube.com' });
 }
+
+// Debug function to check cache status
+async function checkCacheStatus() {
+    try {
+        const response = await chrome.runtime.sendMessage({
+            type: 'GET_CACHE_STATUS'
+        });
+
+        if (response.success) {
+            console.log('nsfK? Cache Status:', response);
+            console.log(`Cache: ${response.size}/${response.maxSize} entries`);
+            response.entries.forEach(entry => {
+                console.log(`  ${entry.videoId}: "${entry.title}" (${entry.age} min ago)`);
+            });
+        }
+    } catch (error) {
+        console.error('Error checking cache status:', error);
+    }
+}
+
+// Make it available globally for debugging
+window.nsfkDebug = {
+    checkCacheStatus
+};
 
 // Add basic styles
 const style = document.createElement('style');

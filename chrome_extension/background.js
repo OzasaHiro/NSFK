@@ -50,6 +50,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             analysisCache.clear();
             sendResponse({ success: true, message: 'Cache cleared' });
             break;
+
+        case 'GET_CACHE_STATUS':
+            const cacheEntries = Array.from(analysisCache.entries()).map(([videoId, cached]) => ({
+                videoId,
+                age: Math.floor((Date.now() - cached.timestamp) / (1000 * 60)),
+                title: cached.data.title || 'Unknown'
+            }));
+            sendResponse({
+                success: true,
+                size: analysisCache.size,
+                maxSize: CONFIG.MAX_CACHE_SIZE,
+                entries: cacheEntries
+            });
+            break;
             
         case 'TEST_API':
             testAPIConnection(sendResponse);
@@ -114,6 +128,7 @@ async function handleAnalysisRequest(message, sendResponse) {
     // Extract video ID from URL if not provided
     if (!videoId && videoUrl) {
         videoId = extractVideoIdFromUrl(videoUrl);
+        console.log('nsfK? Extracted video ID from URL:', videoId, 'from', videoUrl);
     }
     
     // Check cache first
@@ -349,28 +364,37 @@ async function testAPIConnection(sendResponse) {
 // Cache management
 function getCachedAnalysis(videoId) {
     const cached = analysisCache.get(videoId);
-    if (!cached) return null;
-    
-    if (Date.now() - cached.timestamp > CONFIG.CACHE_DURATION) {
+    if (!cached) {
+        console.log('nsfK? No cache entry found for:', videoId);
+        return null;
+    }
+
+    const age = Date.now() - cached.timestamp;
+    const ageMinutes = Math.floor(age / (1000 * 60));
+
+    if (age > CONFIG.CACHE_DURATION) {
+        console.log(`nsfK? Cache expired for ${videoId} (${ageMinutes} minutes old)`);
         analysisCache.delete(videoId);
         return null;
     }
-    
+
+    console.log(`nsfK? Cache hit for ${videoId} (${ageMinutes} minutes old)`);
     return cached.data;
 }
 
 function setCachedAnalysis(videoId, data) {
     if (analysisCache.size >= CONFIG.MAX_CACHE_SIZE) {
         const oldestKey = analysisCache.keys().next().value;
+        console.log(`nsfK? Cache full, removing oldest entry: ${oldestKey}`);
         analysisCache.delete(oldestKey);
     }
-    
+
     analysisCache.set(videoId, {
         data: data,
         timestamp: Date.now()
     });
-    
-    console.log('nsfK? Cached analysis for:', videoId);
+
+    console.log(`nsfK? Cached analysis for: ${videoId} (cache size: ${analysisCache.size}/${CONFIG.MAX_CACHE_SIZE})`);
 }
 
 // Update extension badge
