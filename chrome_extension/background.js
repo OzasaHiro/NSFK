@@ -1,5 +1,5 @@
 // ===========================================
-// background.js - Final Complete Version
+// background.js - Clean Version with Direct API Mapping
 // ===========================================
 
 console.log('nsfK? Background script loaded');
@@ -9,11 +9,11 @@ let currentVideoData = null;
 let analysisCache = new Map();
 let isAnalyzing = false;
 
-// Configuration - UPDATE YOUR API ENDPOINT HERE
+// Configuration
 const CONFIG = {
     CACHE_DURATION: 60 * 60 * 1000, // 1 hour
     MAX_CACHE_SIZE: 100,
-    API_ENDPOINT: 'https://2bcb-107-194-242-26.ngrok-free.app/analyze', // Update this!
+    API_ENDPOINT: 'https://5e45-107-194-242-26.ngrok-free.app/analyze',
     API_TIMEOUT: 240000, // 4 minutes
     RETRY_ATTEMPTS: 2,
     RETRY_DELAY: 5000 // 5 seconds between retries
@@ -101,7 +101,7 @@ async function handleAnalysisRequest(message, sendResponse) {
     }
     
     const videoUrl = message.videoUrl || currentVideoData?.url;
-    const videoId = message.videoId || currentVideoData?.videoId;
+    let videoId = message.videoId || currentVideoData?.videoId;
     
     if (!videoUrl) {
         sendResponse({
@@ -111,11 +111,16 @@ async function handleAnalysisRequest(message, sendResponse) {
         return;
     }
     
+    // Extract video ID from URL if not provided
+    if (!videoId && videoUrl) {
+        videoId = extractVideoIdFromUrl(videoUrl);
+    }
+    
     // Check cache first
     if (videoId) {
         const cached = getCachedAnalysis(videoId);
         if (cached) {
-            console.log('nsfK? Returning cached analysis');
+            console.log('nsfK? Returning cached analysis for:', videoId);
             sendResponse({
                 success: true,
                 data: cached,
@@ -125,7 +130,7 @@ async function handleAnalysisRequest(message, sendResponse) {
         }
     }
     
-    // Perform new analysis with retries
+    // Perform new analysis
     try {
         isAnalyzing = true;
         updateBadge('⏳', '#F59E0B');
@@ -171,14 +176,6 @@ async function performAnalysisWithRetry(videoUrl) {
         try {
             console.log(`nsfK? Analysis attempt ${attempt}/${CONFIG.RETRY_ATTEMPTS}`);
             
-            // Test API connection first on first attempt
-            if (attempt === 1) {
-                const isAPIAlive = await quickAPITest();
-                if (!isAPIAlive) {
-                    throw new Error('API endpoint not responding to basic requests');
-                }
-            }
-            
             const result = await performAnalysis(videoUrl);
             console.log(`nsfK? Analysis succeeded on attempt ${attempt}`);
             return result;
@@ -189,7 +186,7 @@ async function performAnalysisWithRetry(videoUrl) {
             
             // Don't retry on certain errors
             if (error.message.includes('404') || error.message.includes('not found')) {
-                throw error; // Don't retry 404s
+                throw error;
             }
             
             // Wait before retry (except on last attempt)
@@ -203,47 +200,12 @@ async function performAnalysisWithRetry(videoUrl) {
     throw new Error(`Analysis failed after ${CONFIG.RETRY_ATTEMPTS} attempts. Last error: ${lastError.message}`);
 }
 
-// Quick API test to check if endpoint is alive
-async function quickAPITest() {
-    try {
-        console.log('nsfK? Testing API connection...');
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for test
-        
-        const response = await fetch(CONFIG.API_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
-            },
-            body: JSON.stringify({ url: 'test' }),
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        console.log('nsfK? API test response:', response.status);
-        return response.status < 500; // Accept any response except server errors
-        
-    } catch (error) {
-        console.error('nsfK? API test failed:', error);
-        return false;
-    }
-}
-
 // Main analysis function
 async function performAnalysis(videoUrl) {
     console.log('nsfK? Starting analysis for:', videoUrl);
     console.log('nsfK? Using API endpoint:', CONFIG.API_ENDPOINT);
     
     const startTime = Date.now();
-    
-    const requestData = {
-        url: videoUrl
-    };
-    
-    console.log('nsfK? Request payload:', requestData);
     
     try {
         const controller = new AbortController();
@@ -252,8 +214,6 @@ async function performAnalysis(videoUrl) {
             controller.abort();
         }, CONFIG.API_TIMEOUT);
         
-        console.log(`nsfK? Making request with ${CONFIG.API_TIMEOUT/1000}s timeout...`);
-        
         const response = await fetch(CONFIG.API_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -261,7 +221,7 @@ async function performAnalysis(videoUrl) {
                 'Accept': 'application/json',
                 'ngrok-skip-browser-warning': 'true'
             },
-            body: JSON.stringify(requestData),
+            body: JSON.stringify({ url: videoUrl }),
             signal: controller.signal
         });
         
@@ -275,7 +235,7 @@ async function performAnalysis(videoUrl) {
             let errorText;
             try {
                 const errorData = await response.json();
-                errorText = errorData.message || errorData.error || response.statusText;
+                errorText = errorData.message || errorData.error || errorData.detail || response.statusText;
             } catch (e) {
                 errorText = await response.text() || response.statusText;
             }
@@ -284,48 +244,101 @@ async function performAnalysis(videoUrl) {
         
         const result = await response.json();
         console.log('nsfK? Analysis completed successfully');
+        console.log('nsfK? Raw API response:', result);
         
-        if (!result || typeof result !== 'object') {
-            throw new Error('Invalid API response format');
-        }
-        
-        const processingTime = Date.now() - startTime;
-        return formatApiResponse(result, processingTime);
+        // Return the API response with minimal transformation
+        return cleanApiResponse(result, responseTime);
         
     } catch (error) {
         const errorTime = Date.now() - startTime;
         console.error('nsfK? API error after', errorTime, 'ms:', error);
         
         if (error.name === 'AbortError') {
-            throw new Error(`Request timed out after ${CONFIG.API_TIMEOUT / 1000} seconds. Your API might be processing slowly or not responding.`);
+            throw new Error(`Request timed out after ${CONFIG.API_TIMEOUT / 1000} seconds.`);
         } else if (error.message.includes('fetch')) {
-            throw new Error('Network error: Unable to reach API endpoint. Check if your ngrok tunnel is running.');
+            throw new Error('Network error: Unable to reach API endpoint.');
         }
         
         throw error;
     }
 }
 
-// Test API connection function
+// Clean and standardize API response
+function cleanApiResponse(apiResult, processingTime) {
+    console.log('📊 Cleaning API response');
+    
+    // Direct mapping of API fields to our standard format
+    const cleanedResponse = {
+        // Core fields from API
+        title: apiResult.title || 'Unknown Title',
+        channel: apiResult.channel_name || 'Unknown Channel',
+        duration: apiResult.duration || 0,
+        
+        // Safety information
+        safetyScore: apiResult.safety_score || 0,
+        recommendation: apiResult.recommendation || 'No recommendation available',
+        
+        // Content analysis
+        summary: apiResult.summary || '',
+        keywords: apiResult.keywords || [],
+        
+        // Category scores - pass through as-is
+        categories: apiResult.category_scores || {},
+        
+        // Additional analysis fields
+        commentAnalysis: apiResult.comment_analysis || '',
+        webReputation: apiResult.web_reputation || '',
+        
+        // Risk factors if they exist (but don't create if not present)
+        riskFactors: apiResult.risk_factors || [],
+        
+        // Metadata
+        videoUrl: apiResult.video_url || '',
+        analysisTimestamp: apiResult.analysis_timestamp || new Date().toISOString(),
+        reportPath: apiResult.report_path || '',
+        
+        // Audio transcript if available
+        audioTranscript: apiResult.audio_transcript || '',
+        
+        // Processing metadata
+        processingTime: processingTime,
+        apiEndpoint: CONFIG.API_ENDPOINT,
+        
+        // Keep original response for debugging
+        _originalResponse: apiResult
+    };
+    
+    console.log('✅ Cleaned response:', cleanedResponse);
+    return cleanedResponse;
+}
+
+// Test API connection
 async function testAPIConnection(sendResponse) {
     try {
         console.log('nsfK? Testing API connection...');
         
-        const isAlive = await quickAPITest();
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         
-        if (isAlive) {
-            sendResponse({
-                success: true,
-                message: 'API endpoint is responding',
-                endpoint: CONFIG.API_ENDPOINT
-            });
-        } else {
-            sendResponse({
-                success: false,
-                error: 'API endpoint not responding',
-                endpoint: CONFIG.API_ENDPOINT
-            });
-        }
+        const response = await fetch(CONFIG.API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+            },
+            body: JSON.stringify({ url: 'test' }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        sendResponse({
+            success: response.status < 500,
+            message: response.status < 500 ? 'API endpoint is responding' : 'API endpoint error',
+            endpoint: CONFIG.API_ENDPOINT,
+            status: response.status
+        });
+        
     } catch (error) {
         sendResponse({
             success: false,
@@ -334,290 +347,6 @@ async function testAPIConnection(sendResponse) {
         });
     }
 }
-
-// ===========================================
-// DYNAMIC API RESPONSE FORMATTER
-// ===========================================
-
-// Dynamic formatApiResponse function that adapts to any API response format
-function formatApiResponse(apiResult, processingTime) {
-    console.log('🔍 Raw API result:', apiResult);
-    
-    // Extract the actual data from various possible wrapper formats
-    let rawData = apiResult;
-    if (apiResult.data) rawData = apiResult.data;
-    else if (apiResult.analysis) rawData = apiResult.analysis;
-    else if (apiResult.result) rawData = apiResult.result;
-    else if (apiResult.response) rawData = apiResult.response;
-    
-    console.log('📊 Extracted raw data:', rawData);
-    
-    // Dynamic field mapping - check for various possible field names
-    const dynamicAnalysis = {
-        // Video Information
-        title: findField(rawData, [
-            'title', 'video_title', 'name', 'video_name', 'videoTitle'
-        ]) || 'Unknown Title',
-        
-        channel: findField(rawData, [
-            'channel', 'channel_name', 'channelName', 'author', 'uploader', 'creator'
-        ]) || 'Unknown Channel',
-        
-        duration: formatDuration(findField(rawData, [
-            'duration', 'length', 'video_duration', 'videoDuration', 'time'
-        ])),
-        
-        thumbnail: findField(rawData, [
-            'thumbnail', 'thumbnail_url', 'thumbnailUrl', 'image', 'preview'
-        ]) || '',
-        
-        // Safety Scores - handle different scale formats
-        safetyRating: calculateSafetyRating(rawData),
-        safetyColor: '', // Will be calculated later
-        
-        // Age and Recommendations
-        ageRecommendation: findField(rawData, [
-            'recommendation', 'age_recommendation', 'ageRecommendation', 
-            'suggested_age', 'age_rating', 'rating'
-        ]) || 'Parental guidance recommended',
-        
-        confidence: findField(rawData, [
-            'confidence', 'confidence_score', 'confidenceScore', 'certainty'
-        ]) || calculateConfidence(rawData),
-        
-        // Content Analysis
-        reasoning: findField(rawData, [
-            'summary', 'reasoning', 'explanation', 'analysis', 'description',
-            'report', 'conclusion', 'assessment'
-        ]) || 'Analysis completed',
-        
-        // Warnings and Risk Factors
-        contentWarnings: extractWarnings(rawData),
-        positiveAspects: extractPositives(rawData),
-        
-        // Categories - handle various category formats
-        categories: extractCategories(rawData),
-        
-        // Additional Dynamic Fields
-        keywords: findField(rawData, [
-            'keywords', 'tags', 'labels', 'topics'
-        ]) || [],
-        
-        // Audio/Text Content
-        audioTranscript: findField(rawData, [
-            'audio_transcript', 'transcript', 'audioTranscript', 'speech_text', 'captions'
-        ]),
-        
-        // Metadata
-        analysisTime: new Date().toISOString(),
-        processingTime: processingTime,
-        apiEndpoint: CONFIG.API_ENDPOINT,
-        originalApiResponse: rawData, // Keep full original response
-        
-        // Dynamic extra fields - capture anything we might have missed
-        extraFields: extractExtraFields(rawData)
-    };
-    
-    // Calculate safety color based on rating
-    dynamicAnalysis.safetyColor = calculateSafetyColor(dynamicAnalysis.safetyRating);
-    
-    console.log('✅ Dynamic analysis result:', dynamicAnalysis);
-    return dynamicAnalysis;
-}
-
-// Helper function to find a field by checking multiple possible names
-function findField(obj, fieldNames) {
-    if (!obj || typeof obj !== 'object') return null;
-    
-    for (const name of fieldNames) {
-        // Check exact match
-        if (obj.hasOwnProperty(name) && obj[name] !== null && obj[name] !== undefined) {
-            return obj[name];
-        }
-        
-        // Check case-insensitive match
-        const keys = Object.keys(obj);
-        const foundKey = keys.find(key => key.toLowerCase() === name.toLowerCase());
-        if (foundKey && obj[foundKey] !== null && obj[foundKey] !== undefined) {
-            return obj[foundKey];
-        }
-    }
-    
-    return null;
-}
-
-// Dynamic safety rating calculation
-function calculateSafetyRating(data) {
-    // Try direct safety fields first
-    const directSafety = findField(data, [
-        'safety_rating', 'safetyRating', 'safety_score', 'safetyScore',
-        'overall_rating', 'overallRating', 'rating', 'score'
-    ]);
-    
-    if (directSafety !== null) {
-        // Convert different scales to 0-10
-        if (directSafety <= 1) return Math.round(directSafety * 10); // 0-1 scale
-        if (directSafety <= 5) return Math.round(directSafety * 2); // 0-5 scale
-        if (directSafety <= 10) return Math.round(directSafety); // 0-10 scale
-        if (directSafety <= 100) return Math.round(directSafety / 10); // 0-100 scale
-    }
-    
-    // Try to calculate from category scores
-    const categories = extractCategories(data);
-    if (Object.keys(categories).length > 0) {
-        const avgScore = Object.values(categories).reduce((a, b) => a + b, 0) / Object.values(categories).length;
-        return Math.round(avgScore);
-    }
-    
-    // Default fallback
-    return 5;
-}
-
-// Extract warnings from various possible formats
-function extractWarnings(data) {
-    const warnings = findField(data, [
-        'warnings', 'risk_factors', 'riskFactors', 'concerns', 'issues',
-        'content_warnings', 'contentWarnings', 'alerts', 'flags'
-    ]);
-    
-    if (Array.isArray(warnings)) return warnings;
-    if (typeof warnings === 'string') return [warnings];
-    
-    // Look for individual warning fields
-    const warningTypes = [
-        'violence', 'language', 'sexual_content', 'substance_use', 
-        'scary_content', 'inappropriate_content'
-    ];
-    
-    const foundWarnings = [];
-    warningTypes.forEach(type => {
-        const value = findField(data, [type, type.replace('_', ''), type + '_warning']);
-        if (value && (value === true || (typeof value === 'number' && value > 50))) {
-            foundWarnings.push(`Contains ${type.replace('_', ' ')}`);
-        }
-    });
-    
-    return foundWarnings;
-}
-
-// Extract positive aspects
-function extractPositives(data) {
-    const positives = findField(data, [
-        'positives', 'positive_aspects', 'positiveAspects', 'benefits',
-        'educational', 'educational_value', 'good_aspects'
-    ]);
-    
-    if (Array.isArray(positives)) return positives;
-    if (typeof positives === 'string') return [positives];
-    
-    // Check for educational indicators
-    const foundPositives = [];
-    const educational = findField(data, ['educational', 'educational_value', 'learning']);
-    if (educational && (educational === true || (typeof educational === 'number' && educational > 50))) {
-        foundPositives.push('Educational content');
-    }
-    
-    return foundPositives;
-}
-
-// Extract and normalize categories
-function extractCategories(data) {
-    const categories = {};
-    
-    // Try to find category scores object
-    const categoryScores = findField(data, [
-        'categories', 'category_scores', 'categoryScores', 'scores', 'ratings'
-    ]);
-    
-    if (categoryScores && typeof categoryScores === 'object') {
-        Object.entries(categoryScores).forEach(([key, value]) => {
-            if (typeof value === 'number') {
-                const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
-                // Normalize to 0-10 scale and invert if it seems like a risk score
-                let normalizedValue = value;
-                if (value <= 1) normalizedValue = value * 10;
-                else if (value <= 5) normalizedValue = value * 2;
-                else if (value > 10) normalizedValue = value / 10;
-                
-                // If this seems like a risk score (higher = worse), invert it
-                if (key.toLowerCase().includes('risk') || key.toLowerCase().includes('danger')) {
-                    normalizedValue = 10 - normalizedValue;
-                }
-                
-                categories[normalizedKey] = Math.round(Math.max(0, Math.min(10, normalizedValue)));
-            }
-        });
-    }
-    
-    return categories;
-}
-
-// Calculate confidence if not provided
-function calculateConfidence(data) {
-    // Look for confidence indicators
-    const hasTranscript = findField(data, ['transcript', 'audio_transcript']);
-    const hasCategories = Object.keys(extractCategories(data)).length > 0;
-    const hasWarnings = extractWarnings(data).length > 0;
-    
-    let confidence = 5; // Base confidence
-    if (hasTranscript) confidence += 2;
-    if (hasCategories) confidence += 2;
-    if (hasWarnings) confidence += 1;
-    
-    return Math.min(10, confidence);
-}
-
-// Calculate safety color
-function calculateSafetyColor(rating) {
-    if (rating >= 8) return '#10B981'; // Green
-    if (rating >= 6) return '#F59E0B'; // Yellow
-    if (rating >= 4) return '#F97316'; // Orange
-    return '#EF4444'; // Red
-}
-
-// Format duration from various formats
-function formatDuration(duration) {
-    if (!duration) return 'Unknown';
-    
-    if (typeof duration === 'number') {
-        // Assume seconds
-        const minutes = Math.floor(duration / 60);
-        const seconds = duration % 60;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    }
-    
-    if (typeof duration === 'string') {
-        // Return as-is if already formatted
-        return duration;
-    }
-    
-    return 'Unknown';
-}
-
-// Extract any extra fields we might want to display
-function extractExtraFields(data) {
-    const extraFields = {};
-    const commonFields = new Set([
-        'title', 'channel', 'duration', 'thumbnail', 'safety_rating', 'safetyRating',
-        'recommendation', 'summary', 'warnings', 'categories', 'keywords', 'transcript'
-    ]);
-    
-    Object.entries(data).forEach(([key, value]) => {
-        const normalizedKey = key.toLowerCase();
-        if (!commonFields.has(normalizedKey) && !commonFields.has(key)) {
-            // Only include interesting extra fields
-            if (typeof value === 'string' || typeof value === 'number' || Array.isArray(value)) {
-                extraFields[key] = value;
-            }
-        }
-    });
-    
-    return extraFields;
-}
-
-// ===========================================
-// CACHE AND UTILITY FUNCTIONS
-// ===========================================
 
 // Cache management
 function getCachedAnalysis(videoId) {
@@ -661,7 +390,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     console.log('nsfK? Extension installed:', details.reason);
     if (details.reason === 'install') {
         chrome.tabs.create({
-            url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+            url: 'https://www.youtube.com'
         });
     }
     updateBadge('', '#666666');
@@ -678,6 +407,13 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
 });
 
+// Helper function to extract video ID from YouTube URL
+function extractVideoIdFromUrl(url) {
+    if (!url) return null;
+    const match = url.match(/[?&]v=([^&]+)/);
+    return match ? match[1] : null;
+}
+
 // Periodic cache cleanup
 setInterval(() => {
     let cleanedCount = 0;
@@ -693,8 +429,8 @@ setInterval(() => {
     if (cleanedCount > 0) {
         console.log(`nsfK? Cleaned ${cleanedCount} expired cache entries`);
     }
-}, 10 * 60 * 1000);
+}, 10 * 60 * 1000); // Clean every 10 minutes
 
-console.log('nsfK? Background script initialized with dynamic response handling');
+console.log('nsfK? Background script initialized');
 console.log('nsfK? API endpoint:', CONFIG.API_ENDPOINT);
 console.log('nsfK? Timeout:', CONFIG.API_TIMEOUT / 1000, 'seconds');
