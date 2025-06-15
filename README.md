@@ -26,6 +26,7 @@ NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents det
 - **💡 Smart Recommendations** - Safe/Review Required/Not Recommended guidance
 - **🔗 REST API** - FastAPI-based web service for easy integration
 - **🌐 Web Interface** - Enhanced test page with additional analysis sections
+- **🎨 Chrome Extension** - Browser extension for seamless YouTube integration
 
 ## 🚀 Quick Start
 
@@ -58,6 +59,13 @@ python3 start_api.py
 ```bash
 open web_test.html
 ```
+
+### 4. Chrome Extension (Optional)
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" (toggle in top right)
+3. Click "Load unpacked" and select the `chrome_extension` folder
+4. Navigate to any YouTube video page
+5. Click the nsfK? extension icon to analyze the video
 
 ## 🛠️ API Usage
 
@@ -102,9 +110,51 @@ NSFK/
 ├── web_test.html                       # Enhanced web testing interface
 ├── requirements.txt                    # Python dependencies
 ├── .env                                # Environment variables (API keys)
+├── chrome_extension/                   # Chrome browser extension
+│   ├── manifest.json                   # Extension configuration
+│   ├── popup.html                      # Extension popup interface
+│   ├── popup.js                        # Popup functionality
+│   ├── popup.css                       # Popup styling
+│   ├── background.js                   # Background service worker
+│   ├── content.js                      # YouTube page integration
+│   └── icons/                          # Extension icons
 ├── reports/                            # Analysis report outputs
 ├── speed_optimization_analysis.md      # Performance optimization documentation
 └── docs/                               # API documentation
+```
+
+## 🎯 Minimal Setup Requirements
+
+For basic functionality, you only need these essential files:
+
+### Core Files (Required)
+```
+NSFK/
+├── nsfk_analyzer_quality_optimized.py  # ⭐ Main analysis engine
+├── youtube_downloader.py               # ⭐ YouTube downloader
+├── api.py                              # ⭐ REST API server
+├── start_api.py                        # ⭐ Server launcher
+├── requirements.txt                    # ⭐ Dependencies
+└── .env                                # ⭐ API keys (create this)
+```
+
+### Chrome Extension (Optional)
+```
+chrome_extension/
+├── manifest.json                       # Extension config
+├── popup.html                          # UI interface
+├── popup.js                            # Frontend logic
+├── popup.css                           # Styling
+├── background.js                       # Background worker
+├── content.js                          # YouTube integration
+└── icons/                              # Icons (16px, 32px, 128px)
+```
+
+### Additional Files (Enhanced Experience)
+```
+├── web_test.html                       # Web testing interface
+├── nsfk_analyzer.py                    # Original analyzer (backup)
+└── docker-compose.yml                  # Docker deployment
 ```
 
 ## 🔧 Tech Stack
@@ -147,9 +197,24 @@ NSFK/
 | 60-79 | ⚠️ Review Required | Parent judgment needed |
 | 0-59 | ❌ Not Recommended | Inappropriate for children |
 
-## 🔮 Future Development
+## 🎨 Chrome Extension Features
 
-- **Chrome Extension** - Browser integration for YouTube pages
+The included Chrome extension provides seamless YouTube integration:
+
+- **🚀 One-Click Analysis** - Analyze videos directly from YouTube pages
+- **🎯 Real-time Detection** - Automatically detects when you visit YouTube videos
+- **📊 In-browser Results** - View safety scores and recommendations in a popup
+- **💾 Smart Caching** - Remembers analysis results to avoid duplicate processing
+- **⚡ Fast Integration** - Works with your local API server via ngrok tunnel
+- **🛡️ Privacy-Focused** - All analysis happens on your local machine
+
+### Extension Installation
+1. Ensure your API server is running (`python3 start_api.py`)
+2. Load the extension in Chrome Developer Mode
+3. Visit any YouTube video page
+4. Click the nsfK? extension icon to get instant safety analysis
+
+## 🔮 Future Development
 - **Audio Transcription Re-enabling** - Restore Whisper-based audio analysis
 - **Enhanced GMI Integration** - Leverage Llama-4-Scout multimodal capabilities for image analysis
 - **Reddit/Wiki Integration** - Additional context from community discussions
@@ -157,6 +222,8 @@ NSFK/
 - **Custom Age Targeting** - Support for different age groups beyond 10-year-olds
 - **Advanced Comment Filtering** - More sophisticated comment safety analysis
 - **Real-time Analysis** - Live analysis during video playback
+- **Chrome Extension Distribution** - Publish to Chrome Web Store
+- **Mobile App** - Native mobile application for on-the-go analysis
 
 ## 🤝 Contributing
 
