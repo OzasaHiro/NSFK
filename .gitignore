@@ -44,3 +44,6 @@ dist/
 build/
 *.egg-info/
 /.DS_Store
+
+# Analysis reports (execution records)
+reports/
