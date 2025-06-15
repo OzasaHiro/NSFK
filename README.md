@@ -193,9 +193,9 @@ chrome_extension/
 
 - **AI/ML Unified Architecture (Llama-4 Primary)**:
   - **Primary Model**: Meta Llama-4-Maverick-17B-128E-Instruct-FP8 via GMI API (multimodal, 1M token context)
-  - **Frame Analysis**: Llama-4 multimodal with Gemini 2.0 Flash Experimental fallback
+  - **Frame Analysis**: Llama-4 multimodal with Gemini 2.0 Flash fallback
   - **Audio Analysis**: Whisper for transcription + Llama-4 safety analysis
-  - **Text Processing**: Llama-4 primary with Gemini 1.5 Flash fallback for rate limits
+  - **Text Processing**: Llama-4 primary with Gemini 2.0 Flash fallback for rate limits
   - **Rate Limit Optimization**: Intelligent fallback system prevents API conflicts
 - **Video Processing**: yt-dlp, OpenCV, PySceneDetect (concurrent frame extraction)
 - **Audio Analysis**: Whisper for transcription + Llama-4 safety analysis (fully enabled)
@@ -219,7 +219,7 @@ chrome_extension/
 
 #### Video Frame Analysis (Multimodal)
 - **Primary**: Llama-4-Maverick multimodal via GMI API
-- **Fallback**: Gemini 2.0 Flash Experimental (generativelanguage.googleapis.com)
+- **Fallback**: Gemini 2.0 Flash (generativelanguage.googleapis.com)
 - **Processing**: Concurrent batch processing with smart rate limiting
 - **Features**: Scene change detection + regular interval sampling
 
@@ -230,7 +230,7 @@ chrome_extension/
 
 #### Text Analysis (Comments & Reputation)
 - **Primary**: Llama-4-Maverick via GMI API
-- **Fallback**: Gemini 1.5 Flash (separate rate limit pool)
+- **Fallback**: Gemini 2.0 Flash (separate rate limit pool)
 - **Features**: Sentiment analysis, safety scoring, concise summaries
 
 ## 📖 Documentation
