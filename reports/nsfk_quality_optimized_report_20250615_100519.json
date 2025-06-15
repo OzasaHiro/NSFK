@@ -1,0 +1,61 @@
+{
+  "video_url": "https://youtube.com/watch?v=jNQXAC9IVRw",
+  "title": "Me at the zoo",
+  "duration": 19,
+  "safety_score": 81,
+  "category_scores": {
+    "Non-Violence": 10,
+    "Appropriate Language": 10,
+    "Non-Scary Content": 10,
+    "Family-Friendly Content": 10,
+    "Substance-Free": 10,
+    "Safe Behavior": 10,
+    "Educational Value": 6
+  },
+  "summary": "The video 'Me at the zoo' is extremely safe for children 10 and below, with no issues found in terms of violence, language, scary content, or substance use. The content is family-friendly and promotes safe behavior. However, its educational value is moderate, as it may not be directly informative for young children.",
+  "risk_factors": [],
+  "keywords": [
+    "zoo",
+    "children",
+    "education",
+    "wildlife",
+    "family"
+  ],
+  "recommendation": "Safe",
+  "audio_transcript": "",
+  "comment_analysis": "The overall sentiment is positive and nostalgic, with users from different years commenting on the iconic video. The comments are generally family-friendly and innocuous. Some users are commenting on the video's age and their own repeated views.",
+  "channel_name": "jawed",
+  "web_reputation": "To evaluate the YouTube channel \"jawed\" for children 10 and below, we need to consider the content type, its appropriateness, and the overall safety for young viewers.\n\n1. **Content Type and Appropriateness**: The channel \"jawed\" is associated with Jawed Karim, one of the co-founders of YouTube. Upon inspection, it appears that the channel doesn't have a plethora of content that is directly aimed at children. The content is more about personal vlogs, tech-related topics, and some educational or informative content.\n\n2. **Safety for Children 10 and Below**: The safety of the channel for children depends on the nature of the content. Since the channel is not primarily focused on children's content, we need",
+  "dynamic_scoring": {
+    "final_score": 81,
+    "component_scores": {
+      "video_content": 66,
+      "category_analysis": 94,
+      "comments": 95,
+      "web_reputation": 70
+    },
+    "weights_used": {
+      "video_content": 0.4,
+      "category_analysis": 0.3,
+      "comments": 0.2,
+      "web_reputation": 0.1
+    },
+    "explanation": "Combined analysis: Video Content: 66/100, Category Analysis: 94/100, Comments: 95/100, Channel: 70/100",
+    "adjustments_applied": []
+  },
+  "analysis_timestamp": "2025-06-15T10:05:19.113894",
+  "quality_metrics": {
+    "frames_analyzed": 10,
+    "visual_issues_found": 0,
+    "audio_length_chars": 0,
+    "analysis_time": 23.772344827651978,
+    "efficiency_ratio": 0.7992480395917533,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}

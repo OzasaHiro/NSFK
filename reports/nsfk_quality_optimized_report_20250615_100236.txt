@@ -1,0 +1,39 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: Hotel Transylvania 3 (2018) - DJ Battle Scene | Movieclips
+Video URL: https://youtube.com/watch?v=43OVm86-4rU
+Analysis Date: 2025-06-15T10:02:36.374064
+Duration: 279 seconds
+
+Safety Score: 53/100
+Recommendation: Not Recommended
+
+Quality Metrics:
+- Frames Analyzed: 332
+- Visual Issues Found: 323
+- Analysis Time: 28.5s
+- Efficiency Ratio: 9.8x realtime
+
+Category Scores:
+- Non-Violence: 8/10
+- Appropriate Language: 10/10
+- Non-Scary Content: 4/10
+- Family-Friendly Content: 8/10
+- Substance-Free: 10/10
+- Safe Behavior: 6/10
+- Educational Value: 2/10
+
+Summary: The 'Hotel Transylvania 3 (2018) - DJ Battle Scene' contains some scary imagery and dangerous acts that may not be suitable for younger children. While it is a family-friendly animated movie, the scene analyzed has some intense moments. Parents should use discretion for children under 10.
+
+Keywords: cartoon violence, scary imagery, dangerous acts, family movie, animation
+
+Risk Factors:
+1. Frame 1: Scary imagery. The scene is dark and depicts a person in distress amidst rubble.
+2. Frame 2: Scary imagery. Tentacles and dark lighting may be frightening.
+3. Frame 3: Gemini API error - 429
+4. Frame 6: Gemini API error - 429
+5. Frame 10: Gemini API error - 429
+6. Frame 11: Gemini API error - 429
+7. Frame 15: Gemini API error - 429
+8. Frame 16: Gemini API error - 429

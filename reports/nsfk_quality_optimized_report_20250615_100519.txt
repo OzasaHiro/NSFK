@@ -1,0 +1,30 @@
+NSFK Quality-Optimized Video Safety Analysis Report
+============================================================
+
+Video Title: Me at the zoo
+Video URL: https://youtube.com/watch?v=jNQXAC9IVRw
+Analysis Date: 2025-06-15T10:05:19.113894
+Duration: 19 seconds
+
+Safety Score: 81/100
+Recommendation: Safe
+
+Quality Metrics:
+- Frames Analyzed: 10
+- Visual Issues Found: 0
+- Analysis Time: 23.8s
+- Efficiency Ratio: 0.8x realtime
+
+Category Scores:
+- Non-Violence: 10/10
+- Appropriate Language: 10/10
+- Non-Scary Content: 10/10
+- Family-Friendly Content: 10/10
+- Substance-Free: 10/10
+- Safe Behavior: 10/10
+- Educational Value: 6/10
+
+Summary: The video 'Me at the zoo' is extremely safe for children 10 and below, with no issues found in terms of violence, language, scary content, or substance use. The content is family-friendly and promotes safe behavior. However, its educational value is moderate, as it may not be directly informative for young children.
+
+Keywords: zoo, children, education, wildlife, family
+

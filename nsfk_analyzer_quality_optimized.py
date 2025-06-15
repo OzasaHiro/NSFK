@@ -717,7 +717,8 @@ class QualityPreservingNSFKAnalyzer:
 
             # Calculate dynamic safety score
             dynamic_score_result = self.calculate_dynamic_safety_score(
-                video_content_score, comment_analysis_result, web_reputation_result
+                video_content_score, comment_analysis_result, web_reputation_result,
+                report_data['category_scores']
             )
 
             final_safety_score = dynamic_score_result['final_score']
@@ -738,7 +739,8 @@ class QualityPreservingNSFKAnalyzer:
             print(f"Frames Analyzed: {len(frames_base64)}")
             print(f"Issues Found: {len(visual_safety_observations)}")
             print(f"\n🎯 Final Safety Score: {final_safety_score}/100")
-            print(f"   📹 Video Content: {dynamic_score_result['component_scores']['video_content']}/100 (70% weight)")
+            print(f"   📹 Video Content: {dynamic_score_result['component_scores']['video_content']}/100 (40% weight)")
+            print(f"   📊 Category Analysis: {dynamic_score_result['component_scores']['category_analysis']}/100 (30% weight)")
             print(f"   💬 Comments: {dynamic_score_result['component_scores']['comments']}/100 (20% weight)")
             print(f"   🌐 Web Reputation: {dynamic_score_result['component_scores']['web_reputation']}/100 (10% weight)")
 
@@ -1279,7 +1281,8 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
 
     def calculate_dynamic_safety_score(self, video_content_score: int,
                                      comment_analysis: Dict[str, Any],
-                                     web_reputation: Dict[str, Any]) -> Dict[str, Any]:
+                                     web_reputation: Dict[str, Any],
+                                     category_scores: Dict[str, int] = None) -> Dict[str, Any]:
         """
         Calculate dynamic safety score combining multiple analysis components
 
@@ -1287,6 +1290,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             video_content_score: Score from video content analysis (0-100)
             comment_analysis: Dict with analysis, safety_score, concerns
             web_reputation: Dict with analysis, safety_score, rating
+            category_scores: Dict with individual category scores (0-10 each)
 
         Returns:
             Dict with final_score, component_scores, and explanation
@@ -1297,16 +1301,25 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
         comment_score = comment_analysis.get('safety_score', 70) if isinstance(comment_analysis, dict) else 70
         reputation_score = web_reputation.get('safety_score', 70) if isinstance(web_reputation, dict) else 70
 
+        # Calculate category-based score (convert from 0-70 to 0-100 scale)
+        if category_scores:
+            category_total = sum(category_scores.values())
+            category_score = min(100, round((category_total / 70) * 100))  # Convert 0-70 to 0-100
+        else:
+            category_score = content_score  # Fallback to content score if no categories
+
         # Define weights for each component (optimized for child safety)
         weights = {
-            'video_content': 0.70,   # 70% - Most important (actual video content analysis)
-            'comments': 0.20,        # 20% - Community feedback and parent concerns
-            'web_reputation': 0.10   # 10% - Channel reputation and history
+            'video_content': 0.40,    # 40% - Visual/audio content analysis
+            'category_analysis': 0.30, # 30% - Detailed category breakdown
+            'comments': 0.20,         # 20% - Community feedback and parent concerns
+            'web_reputation': 0.10    # 10% - Channel reputation and history
         }
 
         # Calculate weighted average
         final_score = (
             content_score * weights['video_content'] +
+            category_score * weights['category_analysis'] +
             comment_score * weights['comments'] +
             reputation_score * weights['web_reputation']
         )
@@ -1331,8 +1344,21 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             final_score = min(final_score, 40)  # Cap at 40 if video content is very concerning
             score_adjustments.append("Video content contains significant safety issues")
 
+        if category_score < 40:
+            final_score = min(final_score, 50)  # Cap at 50 if category analysis shows major concerns
+            score_adjustments.append("Category analysis reveals significant safety concerns")
+
+        # Additional category-specific adjustments
+        if category_scores:
+            critical_categories = ['Non-Violence', 'Family-Friendly Content', 'Non-Scary Content']
+            for category in critical_categories:
+                if category_scores.get(category, 10) <= 3:  # Very low score in critical category
+                    final_score = min(final_score, 45)
+                    score_adjustments.append(f"Critical safety concern in {category}")
+                    break
+
         # Generate explanation
-        component_breakdown = f"Video Content: {content_score}/100, Comments: {comment_score}/100, Channel: {reputation_score}/100"
+        component_breakdown = f"Video Content: {content_score}/100, Category Analysis: {category_score}/100, Comments: {comment_score}/100, Channel: {reputation_score}/100"
 
         explanation_parts = [f"Combined analysis: {component_breakdown}"]
         if score_adjustments:
@@ -1342,6 +1368,7 @@ Example: "Generally safe educational content for children 10 and below. Rating: 
             'final_score': final_score,
             'component_scores': {
                 'video_content': content_score,
+                'category_analysis': category_score,
                 'comments': comment_score,
                 'web_reputation': reputation_score
             },

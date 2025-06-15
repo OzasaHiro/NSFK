@@ -1,0 +1,68 @@
+{
+  "video_url": "https://youtube.com/watch?v=43OVm86-4rU",
+  "title": "Hotel Transylvania 3 (2018) - DJ Battle Scene | Movieclips",
+  "duration": 279,
+  "safety_score": 53,
+  "category_scores": {
+    "Non-Violence": 8,
+    "Appropriate Language": 10,
+    "Non-Scary Content": 4,
+    "Family-Friendly Content": 8,
+    "Substance-Free": 10,
+    "Safe Behavior": 6,
+    "Educational Value": 2
+  },
+  "summary": "The 'Hotel Transylvania 3 (2018) - DJ Battle Scene' contains some scary imagery and dangerous acts that may not be suitable for younger children. While it is a family-friendly animated movie, the scene analyzed has some intense moments. Parents should use discretion for children under 10.",
+  "risk_factors": [
+    "Frame 1: Scary imagery. The scene is dark and depicts a person in distress amidst rubble.",
+    "Frame 2: Scary imagery. Tentacles and dark lighting may be frightening.",
+    "Frame 3: Gemini API error - 429",
+    "Frame 6: Gemini API error - 429",
+    "Frame 10: Gemini API error - 429",
+    "Frame 11: Gemini API error - 429",
+    "Frame 15: Gemini API error - 429",
+    "Frame 16: Gemini API error - 429"
+  ],
+  "keywords": [
+    "cartoon violence",
+    "scary imagery",
+    "dangerous acts",
+    "family movie",
+    "animation"
+  ],
+  "recommendation": "Not Recommended",
+  "audio_transcript": "",
+  "comment_analysis": "Comments are disabled for this video",
+  "channel_name": "Movieclips",
+  "web_reputation": "To evaluate the YouTube channel \"Movieclips\" for children 10 and below, let's consider the type of content they typically provide. Movieclips is known for uploading clips from various movies, often with a focus on popular and contemporary films. The content can range from family-friendly to mature themes, depending on the movie source.\n\n1. **Content Variety and Mature Themes**: Movieclips includes clips from a wide range of movies, some of which are rated PG-13 or R, containing violence, mature themes, or strong language. This variety means that not all content is suitable for children 10 and below.\n\n2. **Educational Value**: While watching movie clips can be entertaining, the educational value is generally low unless the clips",
+  "dynamic_scoring": {
+    "final_score": 53,
+    "component_scores": {
+      "video_content": 48,
+      "comments": 60,
+      "web_reputation": 70
+    },
+    "weights_used": {
+      "video_content": 0.7,
+      "comments": 0.2,
+      "web_reputation": 0.1
+    },
+    "explanation": "Combined analysis: Video Content: 48/100, Comments: 60/100, Channel: 70/100",
+    "adjustments_applied": []
+  },
+  "analysis_timestamp": "2025-06-15T10:02:36.374064",
+  "quality_metrics": {
+    "frames_analyzed": 332,
+    "visual_issues_found": 323,
+    "audio_length_chars": 0,
+    "analysis_time": 28.46871781349182,
+    "efficiency_ratio": 9.800230619019205,
+    "quality_features": [
+      "concurrent_frame_extraction",
+      "histogram_scene_detection",
+      "parallel_audio_video_processing",
+      "high_throughput_api_batching",
+      "comprehensive_reporting"
+    ]
+  }
+}
