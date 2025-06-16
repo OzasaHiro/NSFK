@@ -3,6 +3,8 @@
 
 *Weekend Agent Hack - Mountain View, June 14th, 2025*
 
+https://github.com/OzasaHiro/NSFK/blob/main/NSFK_Demo.mp4
+
 ## 🎯 Project Overview
 
 NSFK is an AI-powered tool that analyzes YouTube videos to help busy parents determine if content is appropriate for children 10 and below. The system provides comprehensive safety assessments with detailed category-based scoring, comment analysis, channel reputation evaluation, and audio transcript analysis. Features a Chrome extension with intelligent caching and a local REST API for seamless integration.
