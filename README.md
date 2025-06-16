@@ -3,7 +3,7 @@
 
 *Weekend Agent Hack - Mountain View, June 14th, 2025*
 
-![((https://github.com/OzasaHiro/NSFK/blob/main/NSFK_Demo.mp4)](https://github.com/OzasaHiro/NSFK/blob/main/NSFK_Demo.mp4))
+![Demo-movie](https://github.com/OzasaHiro/NSFK/blob/main/NSFK_Demo.mp4)
 
 
 ## 🎯 Project Overview
